@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VoidCraft | Enter the Void</title>
     <style>
-        /* CSS MEIN KOI TABDEELI NAHI KI GAYI */
         body {
             margin: 0; padding: 0;
             background: radial-gradient(circle at center, #0a192f 0%, #020c1b 100%);
@@ -61,7 +60,7 @@
             </div>
             <input type="email" placeholder="Email Address">
             <input type="password" placeholder="Password">
-            <button class="submit-btn" onclick="initGame()">Continue</button>
+            <button class="submit-btn" onclick="finishAuth()">Continue</button>
         </div>
     </div>
 
@@ -93,8 +92,14 @@
 
         function closeModal() { modal.style.display = "none"; }
 
-        function initGame() {
+        // Sign Up / Login khatam karne ke baad wapas home par rakhega
+        function finishAuth() {
+            alert(title.innerText + " Successful!");
             closeModal();
+        }
+
+        // Sirf Get Started dabane par game menu khulega
+        function initGame() {
             document.getElementById('main-nav').style.display = 'none';
             document.getElementById('main-hero').style.display = 'none';
             document.getElementById('game-container').style.display = 'block';
