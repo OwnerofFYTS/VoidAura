@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SkyViper | 2D Gaming Hub</title>
+    <title>SkyViper | Gaming</title>
     <style>
-        /* Base Styling */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         
         body {
             height: 100vh;
-            background: radial-gradient(circle at center, #1e1e2f 0%, #0a0a0c 100%);
+            background: radial-gradient(circle at center, #1a1a2e 0%, #08080a 100%);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -18,115 +17,141 @@
             overflow: hidden;
         }
 
-        /* Glassmorphism Lobby Card */
-        .lobby-container {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 60px;
-            border-radius: 30px;
-            text-align: center;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
-            max-width: 500px;
-            width: 90%;
-        }
-
-        h1 {
-            font-size: 4rem;
-            letter-spacing: 5px;
-            background: linear-gradient(to right, #00f2fe, #4facfe);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 10px;
-            font-weight: 900;
-        }
-
-        p.tagline {
-            font-size: 1.1rem;
-            color: #888;
-            margin-bottom: 40px;
-            letter-spacing: 1px;
-        }
-
-        /* Buttons Section */
-        .btn-group {
+        /* Navbar for Top Right Buttons */
+        .navbar {
+            position: absolute;
+            top: 20px;
+            right: 30px;
             display: flex;
             gap: 15px;
-            justify-content: center;
         }
 
-        .btn {
-            padding: 12px 30px;
-            border-radius: 12px;
-            border: none;
+        .nav-btn {
+            padding: 10px 25px;
+            border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
             transition: 0.3s;
-            text-decoration: none;
+            border: none;
+            font-size: 14px;
         }
 
-        .btn-primary { background: #4facfe; color: white; }
-        .btn-secondary { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); }
+        .login-nav { background: transparent; color: #4facfe; border: 1px solid #4facfe; }
+        .signup-nav { background: #4facfe; color: white; }
+        .nav-btn:hover { transform: scale(1.05); opacity: 0.9; }
 
-        .btn:hover { transform: translateY(-3px); filter: brightness(1.2); }
+        /* Center Content */
+        .main-lobby {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(25px);
+            padding: 70px;
+            border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 50px rgba(0,0,0,0.7);
+        }
 
-        /* Modal (Login/Signup Popups) */
+        h1 {
+            font-size: 5rem;
+            letter-spacing: 8px;
+            background: linear-gradient(to right, #00f2fe, #4facfe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 900;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+        }
+
+        /* Modal / Popup */
         .modal {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.85);
             justify-content: center; align-items: center;
-            z-index: 100;
+            z-index: 1000;
         }
 
-        .modal-content {
+        .modal-box {
             background: #161b22;
             padding: 40px;
             border-radius: 20px;
-            width: 350px;
+            width: 380px;
             border: 1px solid #30363d;
+            position: relative;
         }
+
+        .modal-box h2 { margin-bottom: 20px; color: #4facfe; }
 
         input {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             margin: 10px 0;
             background: #0d1117;
             border: 1px solid #30363d;
             color: white;
-            border-radius: 8px;
+            border-radius: 10px;
+            outline: none;
         }
 
-        .close-btn {
-            color: #888;
-            float: right;
+        input:focus { border-color: #4facfe; }
+
+        /* Error Message Styling */
+        #error-msg {
+            color: #ff4d4d;
+            font-size: 13px;
+            margin-top: 5px;
+            display: none; /* Pehle hide rahega */
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: #4facfe;
+            border: none;
+            color: white;
+            font-weight: bold;
+            border-radius: 10px;
+            margin-top: 20px;
             cursor: pointer;
-            font-size: 20px;
+        }
+
+        .close-x {
+            position: absolute;
+            top: 15px; right: 20px;
+            color: #888; cursor: pointer; font-size: 20px;
         }
     </style>
 </head>
 <body>
 
-    <div class="lobby-container">
-        <h1>SKYVIPER</h1>
-        <p class="tagline">All 2D Games In One Website</p>
-        
-        <div class="btn-group">
-            <button class="btn btn-primary" onclick="openModal('login')">Login</button>
-            <button class="btn btn-secondary" onclick="openModal('signup')">Sign Up</button>
-        </div>
+    <div class="navbar">
+        <button class="nav-btn login-nav" onclick="openModal('Login')">Login</button>
+        <button class="nav-btn signup-nav" onclick="openModal('Sign Up')">Sign Up</button>
+    </div>
+
+    <div class="main-lobby">
+        <h1>SKY VIPER</h1>
+        <p class="subtitle">All 2D Games In One Website</p>
     </div>
 
     <div id="authModal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeModal()">&times;</span>
-            <h2 id="modalTitle" style="margin-bottom: 20px;">Login</h2>
+        <div class="modal-box">
+            <span class="close-x" onclick="closeModal()">&times;</span>
+            <h2 id="modalTitle">Login</h2>
+            
             <form id="authForm">
-                <input type="email" placeholder="Email Address" required>
-                <input type="password" placeholder="Password" required>
-                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 15px;">Continue</button>
+                <input type="email" id="email" placeholder="Enter Email" required>
+                <input type="password" id="password" placeholder="Enter Password" required>
+                
+                <p id="error-msg">Incorrect email or password!</p>
+                
+                <button type="submit" class="submit-btn">Continue</button>
             </form>
         </div>
     </div>
@@ -134,28 +159,41 @@
     <script>
         const modal = document.getElementById('authModal');
         const modalTitle = document.getElementById('modalTitle');
+        const errorMsg = document.getElementById('error-msg');
+        const authForm = document.getElementById('authForm');
 
-        function openModal(type) {
+        function openModal(title) {
             modal.style.display = 'flex';
-            modalTitle.innerText = type === 'login' ? 'Welcome Back' : 'Create Account';
+            modalTitle.innerText = title;
+            errorMsg.style.display = 'none'; // Reset error on open
+            authForm.reset();
         }
 
         function closeModal() {
             modal.style.display = 'none';
         }
 
-        // Form Submission Logic
-        document.getElementById('authForm').onsubmit = function(e) {
+        // Real Logic for Incorrect Email/Pass
+        authForm.onsubmit = function(e) {
             e.preventDefault();
-            const email = e.target.querySelector('input[type="email"]').value;
-            alert('Aapka data "SkyViper" system mein receive ho gaya!\nEmail: ' + email);
-            closeModal();
+            
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('password').value;
+
+            // Demo Check: Agar admin@gmail.com aur 12345 nahi hai to error dikhao
+            if(email === "admin@gmail.com" && pass === "12345") {
+                alert("Login Successful! Welcome to SkyViper.");
+                closeModal();
+            } else {
+                errorMsg.style.display = 'block'; // Show error
+                // Input shake effect (optional)
+                authForm.style.animation = "shake 0.2s ease-in-out 0s 2";
+            }
         };
 
-        // Click outside to close
-        window.onclick = function(event) {
-            if (event.target == modal) closeModal();
-        }
+        // Modal band karne ke liye bahar click karein
+        window.onclick = (event) => { if (event.target == modal) closeModal(); }
     </script>
+
 </body>
 </html>
