@@ -3,102 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cubex | Next Gen Gaming</title>
+    <title>Cubex.io | Professional Gaming</title>
     <style>
+        /* Modern Dark Theme */
         body {
             margin: 0;
             padding: 0;
-            background-color: #0d1117; /* Solid Dark Theme */
+            background-color: #0d1117; 
             color: #ffffff;
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
             height: 100vh;
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
 
-        /* Top Right Navigation */
+        /* Top Navigation Bar */
         nav {
             display: flex;
             justify-content: flex-end;
-            padding: 25px 40px;
-            gap: 25px;
+            padding: 20px 50px;
+            gap: 15px;
             align-items: center;
         }
 
-        .nav-link {
-            color: #8b949e;
+        .nav-btn {
             text-decoration: none;
-            font-size: 15px;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 8px 20px;
+            border-radius: 6px;
             transition: 0.3s;
         }
 
-        .nav-link:hover {
-            color: #58a6ff;
+        .login-link {
+            color: #8b949e;
         }
 
-        .signin-btn {
-            background-color: #21262d;
-            color: #c9d1d9;
-            padding: 8px 18px;
-            border: 1px solid #30363d;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: 500;
+        .login-link:hover {
+            color: #ffffff;
         }
 
-        .signin-btn:hover {
-            background-color: #30363d;
+        .signup-btn {
+            background-color: #ffffff;
+            color: #0d1117;
+            border: 1px solid #ffffff;
         }
 
-        /* Center Content */
+        .signup-btn:hover {
+            background-color: #e6e6e6;
+        }
+
+        /* Hero Section */
         .hero {
             flex-grow: 1;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            text-align: center;
+            padding-bottom: 100px; /* Text aur Button ko darmiyan se thora neechay karne ke liye */
         }
 
         h1 {
-            font-size: 70px;
+            font-size: 85px;
             margin: 0;
-            background: linear-gradient(to bottom, #fff, #8b949e);
+            font-weight: 800;
+            background: linear-gradient(180deg, #ffffff 0%, #444d56 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            letter-spacing: -2px;
+            letter-spacing: -4px;
         }
 
+        .sub-text {
+            color: #8b949e;
+            font-size: 18px;
+            margin-top: 10px;
+            letter-spacing: 1px;
+        }
+
+        /* Professional Button */
         .get-started {
-            margin-top: 40px;
-            padding: 16px 45px;
-            font-size: 20px;
-            font-weight: bold;
-            background-color: #238636; /* GitHub Green */
+            margin-top: 50px; /* Is se button aur neechay chala jayega */
+            padding: 18px 50px;
+            font-size: 18px;
+            font-weight: 600;
             color: white;
-            border: none;
-            border-radius: 8px;
+            background: #238636;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
             cursor: pointer;
-            box-shadow: 0 4px 14px rgba(35, 134, 54, 0.4);
-            transition: 0.2s ease;
+            box-shadow: 0 10px 20px rgba(35, 134, 54, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .get-started:hover {
-            transform: translateY(-2px);
-            background-color: #2ea043;
+            background: #2ea043;
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(35, 134, 54, 0.4);
         }
+
+        /* Click Animation */
+        .get-started:active {
+            transform: translateY(0);
+        }
+
     </style>
 </head>
 <body>
 
     <nav>
-        <a href="mailto:your-email@example.com" class="nav-link">Email Us</a>
-        <a href="#" class="signin-btn">Sign In</a>
+        <a href="#" class="nav-btn login-link">Log in</a>
+        <a href="#" class="nav-btn signup-btn">Sign up</a>
     </nav>
 
     <div class="hero">
         <h1>Cubex.io</h1>
-        <button class="get-started">Get Started</button>
+        <p class="sub-text">The future of minimal gaming.</p>
+        <button class="get-started" onclick="startAction()">Get Started</button>
     </div>
+
+    <script>
+        function startAction() {
+            alert("Redirecting to the game...");
+            // Yahan hum baad mein game ka page load karenge
+        }
+    </script>
 
 </body>
 </html>
