@@ -5,18 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VoidCraft | Enter the Void</title>
     <style>
-        /* DESIGN BILKUL WAISA HI HAI */
-        body {
-            margin: 0; padding: 0;
-            background: radial-gradient(circle at center, #0a192f 0%, #020c1b 100%);
-            color: #e6f1ff; font-family: 'Inter', sans-serif;
-            height: 100vh; display: flex; flex-direction: column; overflow: hidden;
-        }
-
+        /* DESIGN REMAINS UNTOUCHED */
+        body { margin: 0; padding: 0; background: radial-gradient(circle at center, #0a192f 0%, #020c1b 100%); color: #e6f1ff; font-family: 'Inter', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         nav { display: flex; justify-content: flex-end; padding: 25px 60px; gap: 20px; align-items: center; z-index: 10; }
         .login-btn { color: #8892b0; background: none; border: none; font-size: 15px; font-weight: 500; cursor: pointer; }
         .signup-btn { background-color: transparent; color: #64ffda; border: 1px solid #64ffda; padding: 10px 22px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 600; }
-        
         .hero { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding-bottom: 80px; }
         h1 { font-size: clamp(50px, 12vw, 100px); margin: 0; font-weight: 800; color: #ccd6f6; letter-spacing: -2px; }
         .sub-text { color: #8892b0; font-size: 18px; margin-top: 5px; letter-spacing: 4px; text-transform: uppercase; }
@@ -25,20 +18,16 @@
         /* AUTH MODAL */
         .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(2, 12, 27, 0.9); backdrop-filter: blur(8px); }
         .modal-content { background-color: #112240; margin: 8% auto; padding: 30px; border-radius: 16px; width: 350px; text-align: center; border: 1px solid #233554; }
-        .modal-content h2 { color: #64ffda; margin-bottom: 20px; }
-        
         input { width: 100%; padding: 12px; margin: 8px 0; background: #0a192f; border: 1px solid #233554; color: white; border-radius: 6px; box-sizing: border-box; }
         .submit-btn { width: 100%; padding: 12px; background: #64ffda; color: #0a192f; border: none; border-radius: 6px; font-weight: bold; margin-top: 15px; cursor: pointer; }
-        .close-btn { color: #8892b0; float: right; font-size: 28px; cursor: pointer; margin-top: -15px; }
-        
-        .switch-text { color: #8892b0; font-size: 13px; margin-top: 15px; cursor: pointer; display: block; }
-        .switch-text span { color: #64ffda; text-decoration: underline; }
 
-        /* GAME OVERLAY */
+        /* VOIDCRAFT 3D ENGINE AREA */
         #game-container { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 1000; }
+        #game-canvas { width: 100%; height: 100%; display: block; }
+        #crosshair { position: fixed; top: 50%; left: 50%; width: 20px; height: 20px; border: 2px solid #64ffda; transform: translate(-50%, -50%); pointer-events: none; border-radius: 50%; }
+        #ui-overlay { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); padding: 10px 30px; border-radius: 10px; border: 1px solid #64ffda; display: none; }
         #game-menu { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; z-index: 1001; }
         .mode-btn { display: block; width: 250px; padding: 20px; margin: 15px; background: #112240; color: #64ffda; border: 2px solid #64ffda; border-radius: 8px; font-size: 20px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
-        iframe { width: 100%; height: 100%; border: none; display: none; }
     </style>
 </head>
 <body>
@@ -56,7 +45,6 @@
 
     <div id="authModal" class="modal">
         <div class="modal-content">
-            <span class="close-btn" onclick="closeModal()">&times;</span>
             <h2 id="modalTitle">Sign Up</h2>
             <div id="signup-fields">
                 <input type="text" placeholder="First Name">
@@ -65,75 +53,89 @@
             <input type="email" placeholder="Email Address">
             <input type="password" placeholder="Password">
             <button class="submit-btn" onclick="startTheGame()">Continue</button>
-            <p class="switch-text" id="switchLink" onclick="toggleAuth()">Already have an account? <span>Login</span></p>
         </div>
     </div>
 
     <div id="game-container">
         <div id="game-menu">
             <h2 style="color: white; margin-bottom: 30px; font-size: 32px;">SELECT GAME MODE</h2>
-            <button class="mode-btn" onclick="launchPixelGame('survival')">Survival</button>
-            <button class="mode-btn" onclick="launchPixelGame('towers')">Lucky Towers</button>
-            <p style="color: #8892b0; margin-top: 20px; cursor:pointer;" onclick="location.reload()">← Back to Home</p>
+            <button class="mode-btn" onclick="startLuckyTowers()">Lucky Towers</button>
+            <button class="mode-btn" onclick="location.reload()">Survival (Wait)</button>
         </div>
-        <iframe id="game-frame" src=""></iframe>
+        <div id="crosshair" style="display:none"></div>
+        <div id="ui-overlay">Inventory: <span id="current-item">Empty</span></div>
+        <canvas id="game-canvas"></canvas>
     </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
     <script>
         const modal = document.getElementById("authModal");
-        const title = document.getElementById("modalTitle");
-        const signupFields = document.getElementById("signup-fields");
-        const switchLink = document.getElementById("switchLink");
+        let isUserLoggedIn = false;
 
-        let isUserLoggedIn = false; // Initial state
+        function openAuth(t) { modal.style.display="block"; }
+        function closeModal() { modal.style.display="none"; }
+        function checkAuth() { if(!isUserLoggedIn) openAuth('signup'); else startTheGame(); }
+        function startTheGame() { isUserLoggedIn=true; closeModal(); document.getElementById('main-nav').style.display='none'; document.getElementById('main-hero').style.display='none'; document.getElementById('game-container').style.display='block'; }
 
-        function openAuth(type) {
-            modal.style.display = "block";
-            if(type === 'login') {
-                title.innerText = "Login";
-                signupFields.style.display = "none";
-                switchLink.innerHTML = "Don't have an account? <span>Sign Up</span>";
-            } else {
-                title.innerText = "Sign Up";
-                signupFields.style.display = "block";
-                switchLink.innerHTML = "Already have an account? <span>Login</span>";
-            }
-        }
-
-        function toggleAuth() {
-            if(title.innerText === "Sign Up") {
-                openAuth('login');
-            } else {
-                openAuth('signup');
-            }
-        }
-
-        function closeModal() { modal.style.display = "none"; }
-
-        function checkAuth() {
-            if(!isUserLoggedIn) {
-                openAuth('signup'); // Signup pehle khulega
-            } else {
-                startTheGame();
-            }
-        }
-
-        function startTheGame() {
-            isUserLoggedIn = true; // State change
-            closeModal();
-            document.getElementById('main-nav').style.display = 'none';
-            document.getElementById('main-hero').style.display = 'none';
-            document.getElementById('game-container').style.display = 'block';
-        }
-
-        function launchPixelGame(mode) {
-            const frame = document.getElementById('game-frame');
+        // --- LUCKY TOWERS 3D ENGINE ---
+        function startLuckyTowers() {
             document.getElementById('game-menu').style.display = 'none';
-            frame.style.display = 'block';
-            frame.src = mode === 'survival' ? "https://bloxd.io/?mode=survival" : "https://bloxd.io/?mode=oneblock";
-        }
+            document.getElementById('crosshair').style.display = 'block';
+            document.getElementById('ui-overlay').style.display = 'block';
 
-        window.onclick = function(event) { if (event.target == modal) closeModal(); }
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x020c1b);
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({canvas: document.getElementById('game-canvas'), antialias: true});
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            // Lava Floor
+            const lavaGeo = new THREE.PlaneGeometry(200, 200);
+            const lavaMat = new THREE.MeshBasicMaterial({color: 0xff4500, side: THREE.DoubleSide});
+            const lava = new THREE.Mesh(lavaGeo, lavaMat);
+            lava.rotation.x = Math.PI/2;
+            lava.position.y = -30;
+            scene.add(lava);
+
+            // 8 Towers/Platforms
+            const towerGeo = new THREE.BoxGeometry(5, 1, 5);
+            const towerMat = new THREE.MeshBasicMaterial({color: 0x8892b0});
+            for(let i=0; i<8; i++) {
+                const tower = new THREE.Mesh(towerGeo, towerMat);
+                const angle = (i/8) * Math.PI * 2;
+                tower.position.set(Math.cos(angle)*20, 0, Math.sin(angle)*20);
+                scene.add(tower);
+            }
+
+            // Player Setup
+            camera.position.set(20, 2, 20);
+            const move = { f:0, b:0, l:0, r:0 };
+            window.addEventListener('keydown', (e) => {
+                if(e.key=='w') move.f=0.2; if(e.key=='s') move.b=0.2;
+                if(e.key=='a') move.l=0.2; if(e.key=='d') move.r=0.2;
+            });
+            window.addEventListener('keyup', (e) => {
+                if(e.key=='w') move.f=0; if(e.key=='s') move.b=0;
+                if(e.key=='a') move.l=0; if(e.key=='d') move.r=0;
+            });
+
+            // Lucky Item System
+            const items = ["Pixel Block", "Iron Sword", "Void Bow", "Golden Apple", "Ender Pearl"];
+            setInterval(() => {
+                const randomItem = items[Math.floor(Math.random()*items.length)];
+                document.getElementById('current-item').innerText = randomItem;
+            }, 5000);
+
+            function animate() {
+                requestAnimationFrame(animate);
+                camera.position.z -= move.f - move.b;
+                camera.position.x -= move.l - move.r;
+                if(camera.position.y < -25) { alert("You fell in Lava!"); camera.position.set(20, 2, 20); }
+                renderer.render(scene, camera);
+            }
+            animate();
+        }
     </script>
 </body>
 </html>
