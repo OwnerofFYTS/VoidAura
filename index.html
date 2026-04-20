@@ -3,94 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VoidCraft | Beyond the Horizon</title>
+    <title>VoidCraft | Pro Edition</title>
     <style>
-        body { margin: 0; padding: 0; background: #020c1b; color: #e6f1ff; font-family: 'Inter', sans-serif; overflow: hidden; }
+        body { margin: 0; padding: 0; background: #020c1b; color: #e6f1ff; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
         
-        /* UI & NAVIGATION */
-        nav { display: flex; justify-content: flex-end; padding: 25px 60px; gap: 20px; z-index: 10; position: relative; }
-        .hero { height: 80vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
-        .get-started { margin-top: 50px; padding: 20px 65px; background: #64ffda; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        /* UI OVERLAY */
+        #game-view { display: none; position: fixed; inset: 0; z-index: 1000; }
+        #crosshair { position: fixed; top: 50%; left: 50%; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.5); transform: translate(-50%, -50%); pointer-events: none; }
 
-        /* GAME VIEW */
-        #game-view { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; }
-        #crosshair { position: fixed; top: 50%; left: 50%; width: 16px; height: 16px; border: 2px solid #64ffda; transform: translate(-50%, -50%); pointer-events: none; z-index: 1010; }
+        /* ITEM NAME ABOVE HOTBAR */
+        #hotbar-label { position: fixed; bottom: 85px; left: 50%; transform: translateX(-50%); color: #fff; font-size: 18px; text-shadow: 2px 2px #000; opacity: 0; transition: opacity 0.5s; pointer-events: none; font-weight: bold; }
 
-        /* HAND / ITEM IN HAND */
-        #hand-container { position: fixed; bottom: 0; right: 10%; width: 200px; height: 200px; z-index: 1005; pointer-events: none; display: flex; align-items: flex-end; justify-content: center; }
-        .held-item { width: 100px; height: 100px; transition: transform 0.1s; transform-origin: bottom; }
-        .sword-hand { background: #64ffda; clip-path: polygon(40% 0%, 60% 0%, 60% 70%, 100% 70%, 100% 80%, 60% 80%, 60% 100%, 40% 100%, 40% 80%, 0% 80%, 0% 70%, 40% 70%); transform: rotate(25deg); }
-        .block-hand { background: #8892b0; border: 4px solid #233554; width: 80px; height: 80px; }
+        /* HAND SYSTEM */
+        #hand-container { position: fixed; bottom: -20px; right: 10%; width: 250px; height: 250px; pointer-events: none; z-index: 1005; }
+        .held-item { width: 120px; height: 120px; transition: transform 0.1s; transform-origin: bottom; }
+        .sword-hand { background: #64ffda; clip-path: polygon(45% 0%, 55% 0%, 55% 70%, 100% 70%, 100% 80%, 55% 80%, 55% 100%, 45% 100%, 45% 80%, 0% 80%, 0% 70%, 45% 70%); transform: rotate(20deg) translateX(50px); box-shadow: inset -10px -10px rgba(0,0,0,0.2); }
+        .block-hand { background: #8892b0; border: 5px solid #233554; width: 90px; height: 90px; transform: rotate(5deg) translateX(40px); }
 
-        /* HOTBAR */
-        #hotbar { position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 2px; background: rgba(0,0,0,0.6); padding: 4px; border: 3px solid #1a1a1a; z-index: 1010; }
-        .slot { width: 44px; height: 44px; background: #8b8b8b; border: 3px solid #373737; display: flex; align-items: center; justify-content: center; box-sizing: border-box; }
-        .slot.selected { border: 3px solid #ffffff; background: #a0a0a0; }
+        /* INVENTORY & HOTBAR */
+        #hotbar { position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%); display: flex; gap: 4px; background: rgba(0,0,0,0.8); padding: 6px; border: 3px solid #1a1a1a; z-index: 1010; }
+        .slot { width: 48px; height: 48px; background: #8b8b8b; border: 3px solid #373737; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: inset -3px -3px #555; }
+        .slot.selected { border: 3px solid #ffffff; background: #a0a0a0; box-shadow: none; }
         
-        /* INVENTORY SCREEN */
-        #inventory-screen { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #c6c6c6; border: 4px solid #333; padding: 20px; z-index: 2000; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
-        .inv-grid { display: grid; grid-template-columns: repeat(9, 44px); gap: 2px; margin-bottom: 15px; }
-        .inv-label { color: #333; font-size: 14px; font-weight: bold; margin: 5px 0; }
+        #inventory-screen { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #c6c6c6; border: 4px solid #333; padding: 25px; z-index: 2000; box-shadow: 0 0 100px #000; }
+        .inv-grid { display: grid; grid-template-columns: repeat(9, 48px); gap: 4px; }
 
-        /* ICONS */
-        .icon-sword { width: 20px; height: 20px; background: #64ffda; clip-path: polygon(0% 100%, 100% 0%, 70% 0%, 0% 70%); }
-        .icon-block { width: 18px; height: 18px; background: #8892b0; border: 1px solid #233554; }
+        /* ITEM PIXELS */
+        .i-sword { width: 24px; height: 24px; background: #64ffda; clip-path: polygon(0% 100%, 100% 0%, 70% 0%, 0% 70%); pointer-events: none; }
+        .i-block { width: 22px; height: 22px; background: #8892b0; border: 2px solid #233554; pointer-events: none; }
 
-        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(2,12,27,0.95); }
-        .modal-content { background: #112240; width: 300px; margin: 100px auto; padding: 40px; border-radius: 10px; text-align: center; }
+        /* DRAGGING ICON */
+        #cursor-item { position: fixed; pointer-events: none; z-index: 3000; display: none; }
+
+        .btn-start { margin-top: 50px; padding: 20px 60px; background: #64ffda; border: none; font-weight: bold; cursor: pointer; border-radius: 4px; }
     </style>
 </head>
 <body>
 
-    <nav id="top-nav">
-        <button class="signup-btn" onclick="openAuth()">Sign Up</button>
-    </nav>
-
     <div class="hero" id="home-hero">
-        <h1>VoidCraft</h1>
-        <p style="letter-spacing: 4px; color: #8892b0;">BEYOND THE HORIZON</p>
-        <button class="get-started" onclick="initGameFlow()">Get Started</button>
-    </div>
-
-    <div id="authModal" class="modal">
-        <div class="modal-content">
-            <h2 style="color:#64ffda">Account</h2>
-            <input type="text" id="fname" placeholder="First Name" style="width:100%; margin: 10px 0; padding:10px; background:#0a192f; border:1px solid #233554; color:white;">
-            <input type="password" placeholder="Password" style="width:100%; margin: 10px 0; padding:10px; background:#0a192f; border:1px solid #233554; color:white;">
-            <button class="get-started" style="width:100%" onclick="launchGame()">Start Playing</button>
-        </div>
+        <h1 style="font-size: 80px; margin:0; color:#ccd6f6">VoidCraft</h1>
+        <button class="btn-start" onclick="launchGame()">START GAME</button>
     </div>
 
     <div id="game-view">
         <div id="crosshair"></div>
+        <div id="hotbar-label">Diamond Sword</div>
         
         <div id="hand-container">
             <div id="held-item-visual" class="held-item"></div>
         </div>
 
+        <div id="cursor-item"></div>
+
         <div id="hotbar">
-            <div class="slot selected" id="slot-1"><div class="icon-sword"></div></div>
-            <div class="slot" id="slot-2"><div class="icon-block"></div></div>
-            <div class="slot" id="slot-3"></div>
-            <div class="slot" id="slot-4"></div>
-            <div class="slot" id="slot-5"></div>
-            <div class="slot" id="slot-6"></div>
-            <div class="slot" id="slot-7"></div>
-            <div class="slot" id="slot-8"></div>
-            <div class="slot" id="slot-9"></div>
+            <script>for(let i=1; i<=9; i++) document.write(`<div class="slot ${i===1?'selected':''}" id="slot-${i}" onclick="handleSlotClick(this)"></div>`);</script>
         </div>
 
         <div id="inventory-screen">
-            <div class="inv-label">Inventory</div>
+            <p style="color:#333; font-weight:bold; margin-top:0;">Inventory</p>
             <div class="inv-grid">
-                <script>for(let i=0; i<27; i++) document.write('<div class="slot"></div>');</script>
+                <script>for(let i=10; i<=36; i++) document.write(`<div class="slot" id="slot-${i}" onclick="handleSlotClick(this)"></div>`);</script>
             </div>
-            <div class="inv-label">Hotbar</div>
-            <div class="inv-grid">
-                <div class="slot"><div class="icon-sword"></div></div>
-                <div class="slot"><div class="icon-block"></div></div>
-                <script>for(let i=0; i<7; i++) document.write('<div class="slot"></div>');</script>
-            </div>
+            <p style="color:#333; font-weight:bold;">Hotbar</p>
+            <div class="inv-grid" id="inv-hotbar-mirror"></div>
         </div>
         <canvas id="void-canvas"></canvas>
     </div>
@@ -98,112 +73,170 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
     <script>
-        let loggedIn = false;
-        let invOpen = false;
-        const canvas = document.getElementById('void-canvas');
-        const visualHand = document.getElementById('held-item-visual');
+        let invOpen = false, currentSlot = 1;
+        let grabbedItem = null;
+        const itemsData = {
+            'sword': { name: "Diamond Sword", class: "sword-hand", icon: "i-sword" },
+            'block': { name: "Void Block", class: "block-hand", icon: "i-block" }
+        };
 
-        function openAuth() { document.getElementById('authModal').style.display='block'; }
-        function initGameFlow() { if(!loggedIn) openAuth(); else launchGame(); }
-
-        function launchGame() {
-            loggedIn = true;
-            document.getElementById('authModal').style.display='none';
-            document.getElementById('top-nav').style.display='none';
-            document.getElementById('home-hero').style.display='none';
-            document.getElementById('game-view').style.display='block';
-            startVoidEngine();
-            updateHand('slot-1');
+        function showLabel(text) {
+            const label = document.getElementById('hotbar-label');
+            label.innerText = text;
+            label.style.opacity = 1;
+            clearTimeout(window.labelTimer);
+            window.labelTimer = setTimeout(() => label.style.opacity = 0, 2000);
         }
 
-        function updateHand(slotId) {
-            visualHand.className = 'held-item';
-            if(slotId === 'slot-1') visualHand.classList.add('sword-hand');
-            else if(slotId === 'slot-2') visualHand.classList.add('block-hand');
+        function handleSlotClick(el) {
+            if (!invOpen) return;
+            const cursor = document.getElementById('cursor-item');
+            
+            if (!grabbedItem) {
+                if (el.innerHTML !== "") {
+                    grabbedItem = { html: el.innerHTML, type: el.dataset.type, name: el.dataset.name };
+                    el.innerHTML = "";
+                    el.dataset.type = "";
+                    cursor.innerHTML = grabbedItem.html;
+                    cursor.style.display = "block";
+                }
+            } else {
+                const tempHTML = el.innerHTML;
+                const tempType = el.dataset.type;
+                const tempName = el.dataset.name;
+                
+                el.innerHTML = grabbedItem.html;
+                el.dataset.type = grabbedItem.type;
+                el.dataset.name = grabbedItem.name;
+
+                if (tempHTML !== "") {
+                    grabbedItem = { html: tempHTML, type: tempType, name: tempName };
+                    cursor.innerHTML = grabbedItem.html;
+                } else {
+                    grabbedItem = null;
+                    cursor.style.display = "none";
+                }
+            }
+            updateHandVisual();
+        }
+
+        function updateHandVisual() {
+            const slot = document.getElementById(`slot-${currentSlot}`);
+            const visual = document.getElementById('held-item-visual');
+            visual.className = 'held-item';
+            if (slot.dataset.type === 'sword') visual.classList.add('sword-hand');
+            if (slot.dataset.type === 'block') visual.classList.add('block-hand');
+        }
+
+        function launchGame() {
+            document.getElementById('home-hero').style.display = 'none';
+            document.getElementById('game-view').style.display = 'block';
+            
+            // Initial items
+            const s1 = document.getElementById('slot-1');
+            s1.innerHTML = `<div class="i-sword"></div>`;
+            s1.dataset.type = "sword"; s1.dataset.name = "Diamond Sword";
+            
+            const s2 = document.getElementById('slot-2');
+            s2.innerHTML = `<div class="i-block"></div>`;
+            s2.dataset.type = "block"; s2.dataset.name = "Void Block";
+
+            startVoidEngine();
+            setInterval(luckyDrop, 5000);
+        }
+
+        function luckyDrop() {
+            const r = Math.random() > 0.5 ? 'sword' : 'block';
+            for(let i=1; i<=9; i++) {
+                const s = document.getElementById(`slot-${i}`);
+                if(s.innerHTML === "") {
+                    s.innerHTML = `<div class="i-${r}"></div>`;
+                    s.dataset.type = r;
+                    s.dataset.name = itemsData[r].name;
+                    if(i === currentSlot) {
+                        showLabel(itemsData[r].name);
+                        updateHandVisual();
+                    }
+                    break;
+                }
+            }
         }
 
         function startVoidEngine() {
             const scene = new THREE.Scene();
             scene.background = new THREE.Color(0x020c1b);
             const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-            const renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true});
+            const renderer = new THREE.WebGLRenderer({canvas: document.getElementById('void-canvas'), antialias: true});
             renderer.setSize(window.innerWidth, window.innerHeight);
 
-            // World
-            const lava = new THREE.Mesh(new THREE.PlaneGeometry(1000, 1000), new THREE.MeshBasicMaterial({color: 0xff4400}));
-            lava.rotation.x = -Math.PI/2; lava.position.y = -30;
+            // Better Lava Texture
+            const lavaGeo = new THREE.PlaneGeometry(1000, 1000);
+            const lavaMat = new THREE.MeshBasicMaterial({color: 0xff3300, side: THREE.DoubleSide});
+            const lava = new THREE.Mesh(lavaGeo, lavaMat);
+            lava.rotation.x = Math.PI/2; lava.position.y = -30;
             scene.add(lava);
 
+            // Towers
             for(let i=0; i<8; i++) {
-                const tower = new THREE.Mesh(new THREE.BoxGeometry(12, 1, 12), new THREE.MeshStandardMaterial({color: 0x444d56}));
-                const angle = (i/8)*Math.PI*2;
-                tower.position.set(Math.cos(angle)*35, 0, Math.sin(angle)*35);
+                const tower = new THREE.Mesh(new THREE.BoxGeometry(15, 2, 15), new THREE.MeshStandardMaterial({color: 0x333333}));
+                tower.position.set(Math.cos(i/8*Math.PI*2)*40, 0, Math.sin(i/8*Math.PI*2)*40);
                 scene.add(tower);
             }
-            scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+            scene.add(new THREE.PointLight(0xffffff, 1, 100));
+            scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 
-            camera.position.set(35, 3, 35);
-            let velocityY = 0, onGround = true;
-            let pitch = 0, yaw = 0;
+            camera.position.set(40, 4, 40);
+            let velY = 0, onG = true, pitch = 0, yaw = 0;
             const keys = {};
+
+            window.addEventListener('mousemove', (e) => {
+                if (document.pointerLockElement) {
+                    yaw -= e.movementX * 0.002;
+                    pitch = Math.max(-1.5, Math.min(1.5, pitch - e.movementY * 0.002));
+                }
+                if (invOpen) {
+                    const cursor = document.getElementById('cursor-item');
+                    cursor.style.left = e.clientX + 'px';
+                    cursor.style.top = e.clientY + 'px';
+                }
+            });
 
             window.addEventListener('keydown', (e) => {
                 keys[e.code] = true;
-                if(e.code === 'KeyE') {
+                if (e.code === 'KeyE') {
                     invOpen = !invOpen;
                     document.getElementById('inventory-screen').style.display = invOpen ? 'block' : 'none';
-                    if(invOpen) document.exitPointerLock(); else canvas.requestPointerLock();
+                    if (invOpen) document.exitPointerLock(); else document.getElementById('void-canvas').requestPointerLock();
                 }
-                if(e.key >= 1 && e.key <= 9) {
-                    document.querySelectorAll('#hotbar .slot').forEach(s => s.classList.remove('selected'));
-                    const selectedSlot = document.getElementById('slot-' + e.key);
-                    selectedSlot.classList.add('selected');
-                    updateHand('slot-' + e.key);
+                if (e.key >= 1 && e.key <= 9) {
+                    document.querySelectorAll('.slot').forEach(s => s.classList.remove('selected'));
+                    currentSlot = parseInt(e.key);
+                    const s = document.getElementById(`slot-${currentSlot}`);
+                    s.classList.add('selected');
+                    updateHandVisual();
+                    if(s.dataset.name) showLabel(s.dataset.name);
                 }
             });
             window.addEventListener('keyup', (e) => keys[e.code] = false);
 
-            canvas.addEventListener('mousedown', () => { 
-                if(!invOpen) {
-                    canvas.requestPointerLock();
-                    visualHand.style.transform = "translateY(-20px) rotate(10deg)";
-                    setTimeout(() => visualHand.style.transform = "translateY(0) rotate(25deg)", 100);
-                }
-            });
-
-            window.addEventListener('mousemove', (e) => {
-                if (document.pointerLockElement === canvas) {
-                    yaw -= e.movementX * 0.002;
-                    pitch = Math.max(-1.5, Math.min(1.5, pitch - e.movementY * 0.002));
-                }
-            });
-
             function animate() {
                 requestAnimationFrame(animate);
-                if (document.pointerLockElement === canvas && !invOpen) {
-                    let speed = keys['ControlLeft'] ? 0.3 : (keys['ShiftLeft'] ? 0.07 : 0.18);
-                    if(keys['KeyW']) { camera.position.x -= Math.sin(yaw)*speed; camera.position.z -= Math.cos(yaw)*speed; }
-                    if(keys['KeyS']) { camera.position.x += Math.sin(yaw)*speed; camera.position.z += Math.cos(yaw)*speed; }
-                    if(keys['KeyA']) { camera.position.x -= Math.sin(yaw+1.57)*speed; camera.position.z -= Math.cos(yaw+1.57)*speed; }
-                    if(keys['KeyD']) { camera.position.x += Math.sin(yaw+1.57)*speed; camera.position.z += Math.cos(yaw+1.57)*speed; }
-                    if(keys['Space'] && onGround) { velocityY = 0.2; onGround = false; }
+                if (document.pointerLockElement && !invOpen) {
+                    let s = keys['ControlLeft'] ? 0.3 : (keys['ShiftLeft'] ? 0.08 : 0.18);
+                    if(keys['KeyW']) { camera.position.x -= Math.sin(yaw)*s; camera.position.z -= Math.cos(yaw)*s; }
+                    if(keys['KeyS']) { camera.position.x += Math.sin(yaw)*s; camera.position.z += Math.cos(yaw)*s; }
+                    if(keys['KeyA']) { camera.position.x -= Math.sin(yaw+1.57)*s; camera.position.z -= Math.cos(yaw+1.57)*s; }
+                    if(keys['KeyD']) { camera.position.x += Math.sin(yaw+1.57)*s; camera.position.z += Math.cos(yaw+1.57)*s; }
+                    if(keys['Space'] && onG) { velY = 0.22; onG = false; }
                 }
-
-                velocityY -= 0.01;
-                camera.position.y += velocityY;
-                let viewHeight = keys['ShiftLeft'] ? 2.2 : 3;
-                
-                if (camera.position.y <= viewHeight) {
-                    camera.position.y = viewHeight;
-                    velocityY = 0;
-                    onGround = true;
-                }
-
+                velY -= 0.01; camera.position.y += velY;
+                let h = keys['ShiftLeft'] ? 2.5 : 4;
+                if(camera.position.y <= h) { camera.position.y = h; velY = 0; onG = true; }
                 camera.rotation.set(pitch, yaw, 0, 'YXZ');
-                if(camera.position.y < -28) camera.position.set(35, 3, 35);
                 renderer.render(scene, camera);
             }
             animate();
+            document.getElementById('void-canvas').onclick = () => { if(!invOpen) document.getElementById('void-canvas').requestPointerLock(); };
         }
     </script>
 </body>
