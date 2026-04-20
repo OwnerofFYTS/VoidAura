@@ -3,242 +3,119 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sky Viper | Pro Edition</title>
+    <title>Sky Viper | Game Lobby</title>
     <style>
-        body { margin: 0; padding: 0; background: #020c1b; color: #e6f1ff; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
-        
-        /* EXACT VOIDCRAFT FRONT UI */
-        .hero { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; text-align: center; }
-        h1 { font-size: 80px; margin: 0; color: #ccd6f6; font-weight: 800; letter-spacing: -2px; }
-        .sub-text { color: #64ffda; letter-spacing: 5px; font-size: 14px; margin-top: 5px; font-weight: bold; }
-        
-        .btn-start { 
-            margin-top: 50px; padding: 20px 60px; background: #64ffda; border: none; 
-            font-weight: bold; cursor: pointer; border-radius: 4px; font-size: 18px; 
-            color: #020c1b; transition: 0.3s;
-        }
-        .btn-start:hover { background: #4ecdb0; transform: translateY(-3px); box-shadow: 0 10px 20px rgba(100, 255, 218, 0.2); }
+        /* CSS Reset */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        /* GAME VIEW CONTAINER */
-        #game-view { display: none; position: fixed; inset: 0; z-index: 1000; background: #010813; }
-        
-        /* HUD / UI LAYER (Pygame Stats) */
-        #ui-layer { 
-            position: absolute; top: 20px; left: 20px; pointer-events: none; z-index: 1010; 
-            background: rgba(10, 25, 47, 0.7); padding: 15px; border-radius: 8px; border-left: 4px solid #64ffda;
-        }
-        .stat-text { font-size: 16px; color: #ccd6f6; margin-bottom: 5px; font-family: 'Courier New', monospace; }
-        .health-bg { width: 200px; height: 10px; background: #233554; border-radius: 5px; overflow: hidden; margin-top: 10px; }
-        #health-bar { width: 100%; height: 100%; background: #64ffda; transition: width 0.3s; }
-
-        /* GAME OVER SCREEN */
-        #game-over { 
-            display: none; position: fixed; inset: 0; background: rgba(2, 12, 27, 0.95); 
-            flex-direction: column; justify-content: center; align-items: center; z-index: 2000; 
+        body {
+            background-color: #020c1b;
+            color: #ccd6f6;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
         }
 
-        canvas { display: block; }
+        /* Lobby Container */
+        .lobby-container {
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Sky Viper Title */
+        h1 {
+            font-size: clamp(60px, 12vw, 120px);
+            font-weight: 800;
+            color: #ccd6f6;
+            margin: 0;
+            letter-spacing: -2px;
+            line-height: 1.1;
+            text-transform: uppercase;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        /* Subtitle */
+        .subtitle {
+            color: #64ffda;
+            font-family: 'Courier New', monospace;
+            font-size: clamp(14px, 2vw, 18px);
+            letter-spacing: 6px;
+            margin-top: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            animation: fadeInUp 1s ease-out 0.3s both;
+        }
+
+        /* Get Started Button (VoidCraft Style) */
+        .get-started-btn {
+            margin-top: 60px;
+            padding: 22px 55px;
+            background-color: transparent;
+            color: #64ffda;
+            border: 1px solid #64ffda;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+            animation: fadeIn 1.5s ease-out 0.6s both;
+        }
+
+        .get-started-btn:hover {
+            background-color: rgba(100, 255, 218, 0.1);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px -10px rgba(100, 255, 218, 0.3);
+        }
+
+        /* Decorative Background Elements */
+        .bg-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(10, 25, 47, 0.8) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(10, 25, 47, 0.8) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: 1;
+        }
+
+        /* Animations */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="hero" id="home-hero">
-        <h1 id="title-text">Sky Viper</h1>
-        <p class="sub-text">AIR COMBAT SIMULATOR</p>
-        <button class="btn-start" onclick="launchGame()">GET STARTED</button>
+    <div class="bg-grid"></div>
+
+    <div class="lobby-container">
+        <p style="color: #64ffda; margin-bottom: 20px; font-family: monospace;">SYSTEM READY_</p>
+        <h1>Sky Viper</h1>
+        <div class="subtitle">Next-Gen Air Combat</div>
+        
+        <button class="get-started-btn" onclick="console.log('Game starting...')">
+            GET STARTED
+        </button>
     </div>
 
-    <div id="game-view">
-        <div id="ui-layer">
-            <div class="stat-text" id="score-display">SCORE: 0</div>
-            <div class="stat-text" id="high-score-display">BEST: 0</div>
-            <div class="health-bg"><div id="health-bar"></div></div>
-        </div>
-
-        <div id="game-over">
-            <h1 style="color: #ff4d4d; font-size: 60px; margin: 0;">MISSION FAILED</h1>
-            <p id="final-score" style="font-size: 24px; color: #ccd6f6; margin: 20px 0;"></p>
-            <button class="btn-start" onclick="location.reload()">RE-DEPLOY</button>
-        </div>
-
-        <canvas id="sky-canvas"></canvas>
-    </div>
-
-    <script>
-        const canvas = document.getElementById('sky-canvas');
-        const ctx = canvas.getContext('2d');
-        let gameActive = false;
-        let score = 0;
-        let health = 100;
-        let highScore = localStorage.getItem('skyViperHigh') || 0;
-
-        const keys = {};
-        const player = { x: 100, y: 300, w: 55, h: 40, speed: 7 };
-        let bullets = [];
-        let enemies = [];
-        let enemyBullets = [];
-        let explosions = [];
-
-        function launchGame() {
-            document.getElementById('home-hero').style.display = 'none';
-            document.getElementById('game-view').style.display = 'block';
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            
-            document.getElementById('high-score-display').innerText = `BEST: ${highScore}`;
-            gameActive = true;
-            
-            // Enemy Spawn Interval (Pygame ADDENEMY logic)
-            setInterval(() => { if(gameActive) spawnEnemy(); }, 1000);
-
-            requestAnimationFrame(gameLoop);
-        }
-
-        window.addEventListener('keydown', e => {
-            keys[e.code] = true;
-            if(e.code === 'Space' && gameActive) shoot();
-        });
-        window.addEventListener('keyup', e => keys[e.code] = false);
-
-        function spawnEnemy() {
-            enemies.push({
-                x: canvas.width + 50,
-                y: Math.random() * (canvas.height - 100) + 50,
-                w: 50, h: 40,
-                speed: Math.random() * 3 + 4,
-                lastShot: Date.now(),
-                shootDelay: Math.random() * 1200 + 1000
-            });
-        }
-
-        function shoot() {
-            // Player fires RED bullets (Pygame Logic)
-            bullets.push({ x: player.x + 55, y: player.y + 18, w: 18, h: 4, speed: 14 });
-        }
-
-        function enemyShoot(en) {
-            const dx = (player.x + 25) - en.x;
-            const dy = (player.y + 20) - en.y;
-            const dist = Math.sqrt(dx*dx + dy*dy);
-            enemyBullets.push({
-                x: en.x, y: en.y + 20,
-                vx: (dx/dist) * 8,
-                vy: (dy/dist) * 8
-            });
-        }
-
-        function update() {
-            if(!gameActive) return;
-
-            // Movement Logic (WASD & Arrows)
-            if (keys['ArrowUp'] || keys['KeyW']) player.y -= player.speed;
-            if (keys['ArrowDown'] || keys['KeyS']) player.y += player.speed;
-            if (keys['ArrowLeft'] || keys['KeyA']) player.x -= player.speed;
-            if (keys['ArrowRight'] || keys['KeyD']) player.x += player.speed;
-
-            player.x = Math.max(0, Math.min(canvas.width - player.w, player.x));
-            player.y = Math.max(0, Math.min(canvas.height - player.h, player.y));
-
-            // Move Bullets
-            bullets.forEach((b, i) => {
-                b.x += b.speed;
-                if(b.x > canvas.width) bullets.splice(i, 1);
-            });
-
-            // Enemies Update
-            enemies.forEach((en, i) => {
-                en.x -= en.speed;
-                if(en.x < -60) enemies.splice(i, 1);
-
-                if(Date.now() - en.lastShot > en.shootDelay) {
-                    enemyShoot(en);
-                    en.lastShot = Date.now();
-                }
-
-                // Bullet hits Enemy
-                bullets.forEach((b, bi) => {
-                    if(b.x < en.x + en.w && b.x + b.w > en.x && b.y < en.y + en.h && b.y + b.h > en.y) {
-                        bullets.splice(bi, 1);
-                        enemies.splice(i, 1);
-                        score += 10;
-                        explosions.push({x: en.x, y: en.y, timer: 12});
-                        document.getElementById('score-display').innerText = `SCORE: ${score}`;
-                    }
-                });
-
-                // Direct Collision
-                if(player.x < en.x + en.w && player.x + player.w > en.x && player.y < en.y + en.h && player.y + player.h > en.y) {
-                    health = 0;
-                    endGame();
-                }
-            });
-
-            // Enemy Bullets hits Player
-            enemyBullets.forEach((eb, i) => {
-                eb.x += eb.vx;
-                eb.y += eb.vy;
-                if(eb.x < player.x + player.w && eb.x + 8 > player.x && eb.y < player.y + player.h && eb.y + 8 > player.y) {
-                    enemyBullets.splice(i, 1);
-                    health -= 20; // 20 Damage per hit
-                    document.getElementById('health-bar').style.width = health + '%';
-                    if(health <= 0) endGame();
-                }
-            });
-
-            explosions.forEach((ex, i) => {
-                ex.timer--;
-                if(ex.timer <= 0) explosions.splice(i, 1);
-            });
-        }
-
-        function draw() {
-            ctx.fillStyle = '#010813';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Draw Player (Teal Fighter)
-            ctx.fillStyle = '#64ffda';
-            ctx.beginPath();
-            ctx.moveTo(player.x, player.y + 10);
-            ctx.lineTo(player.x + player.w, player.y + 20);
-            ctx.lineTo(player.x, player.y + 30);
-            ctx.fill();
-
-            // Draw Bullets
-            ctx.fillStyle = '#ff4d4d';
-            bullets.forEach(b => ctx.fillRect(b.x, b.y, b.w, b.h));
-
-            // Enemy Bullets
-            ctx.fillStyle = '#f7eb39';
-            enemyBullets.forEach(eb => {
-                ctx.beginPath(); ctx.arc(eb.x, eb.y, 4, 0, Math.PI*2); ctx.fill();
-            });
-
-            // Enemies
-            ctx.fillStyle = '#8892b0';
-            enemies.forEach(en => ctx.fillRect(en.x, en.y, en.w, en.h));
-
-            // Explosions
-            explosions.forEach(ex => {
-                ctx.fillStyle = `rgba(255, 165, 0, ${ex.timer/12})`;
-                ctx.beginPath(); ctx.arc(ex.x + 25, ex.y + 20, 25, 0, Math.PI*2); ctx.fill();
-            });
-        }
-
-        function endGame() {
-            gameActive = false;
-            if(score > highScore) {
-                highScore = score;
-                localStorage.setItem('skyViperHigh', highScore);
-            }
-            document.getElementById('game-over').style.display = 'flex';
-            document.getElementById('final-score').innerText = `TOTAL SCORE: ${score}`;
-        }
-
-        function gameLoop() {
-            update();
-            draw();
-            if(gameActive) requestAnimationFrame(gameLoop);
-        }
-    </script>
 </body>
 </html>
