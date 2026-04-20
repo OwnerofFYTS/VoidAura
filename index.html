@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VoidCraft | Enter the Void</title>
     <style>
-        /* DESIGN UNTOUCHED */
         body { margin: 0; padding: 0; background: radial-gradient(circle at center, #0a192f 0%, #020c1b 100%); color: #e6f1ff; font-family: 'Inter', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         nav { display: flex; justify-content: flex-end; padding: 25px 60px; gap: 20px; align-items: center; z-index: 10; }
         .login-btn { color: #8892b0; background: none; border: none; font-size: 15px; font-weight: 500; cursor: pointer; }
@@ -20,25 +19,20 @@
         .modal-content { background-color: #112240; margin: 8% auto; padding: 30px; border-radius: 16px; width: 350px; text-align: center; border: 1px solid #233554; }
         input { width: 100%; padding: 12px; margin: 8px 0; background: #0a192f; border: 1px solid #233554; color: white; border-radius: 6px; box-sizing: border-box; }
         .submit-btn { width: 100%; padding: 12px; background: #64ffda; color: #0a192f; border: none; border-radius: 6px; font-weight: bold; margin-top: 15px; cursor: pointer; }
-        .switch-text { color: #8892b0; font-size: 13px; margin-top: 15px; cursor: pointer; display: block; }
 
-        /* VOIDCRAFT 3D ENGINE AREA */
-        #game-view { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 1000; }
-        canvas { width: 100%; height: 100%; }
-
-        /* HUD - UI ELEMENTS */
-        #crosshair { position: fixed; top: 50%; left: 50%; width: 24px; height: 24px; transform: translate(-50%, -50%); pointer-events: none; z-index: 1010; }
-        #crosshair:before { content: ''; position: absolute; top: 0; left: 11px; width: 2px; height: 24px; background: #64ffda; }
-        #crosshair:after { content: ''; position: absolute; top: 11px; left: 0; width: 24px; height: 2px; background: #64ffda; }
-
-        #hotbar { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(10, 25, 47, 0.9); border: 2px solid #64ffda; padding: 15px 40px; border-radius: 8px; z-index: 1010; color: white; font-weight: bold; font-family: monospace; }
+        /* GAME AREA */
+        #game-view { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; }
+        #crosshair { position: fixed; top: 50%; left: 50%; width: 20px; height: 20px; transform: translate(-50%, -50%); pointer-events: none; z-index: 1010; }
+        #crosshair:before { content: ''; position: absolute; top: 0; left: 9px; width: 2px; height: 20px; background: #64ffda; }
+        #crosshair:after { content: ''; position: absolute; top: 9px; left: 0; width: 20px; height: 2px; background: #64ffda; }
+        #hotbar { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(10, 25, 47, 0.9); border: 2px solid #64ffda; padding: 10px 30px; border-radius: 8px; z-index: 1010; color: white; font-family: monospace; font-size: 18px; }
     </style>
 </head>
 <body>
 
     <nav id="top-nav">
-        <button class="login-btn" onclick="openAuth('login')">Login</button>
-        <button class="signup-btn" onclick="openAuth('signup')">Sign Up</button>
+        <button class="login-btn" onclick="openAuth()">Login</button>
+        <button class="signup-btn" onclick="openAuth()">Sign Up</button>
     </nav>
 
     <div class="hero" id="home-hero">
@@ -50,20 +44,17 @@
     <div id="authModal" class="modal">
         <div class="modal-content">
             <h2 id="modalTitle">Sign Up</h2>
-            <div id="signup-inputs">
-                <input type="text" placeholder="First Name">
-                <input type="text" placeholder="Last Name">
-            </div>
+            <input type="text" placeholder="First Name">
+            <input type="text" placeholder="Last Name">
             <input type="email" placeholder="Email Address">
             <input type="password" placeholder="Password">
             <button class="submit-btn" onclick="launchGame()">Start Playing</button>
-            <p class="switch-text" onclick="toggleAuth()">Already have account? <span>Login</span></p>
         </div>
     </div>
 
     <div id="game-view">
         <div id="crosshair"></div>
-        <div id="hotbar">INV: <span id="item-slot">Searching...</span></div>
+        <div id="hotbar">ITEM: <span id="item-slot">WAITING...</span></div>
         <canvas id="void-canvas"></canvas>
     </div>
 
@@ -73,15 +64,12 @@
         const modal = document.getElementById('authModal');
         let loggedIn = false;
 
-        function openAuth(mode) { modal.style.display = 'block'; }
-        function closeModal() { modal.style.display = 'none'; }
-        function toggleAuth() { /* Switch logic */ }
-
-        function initGameFlow() { if(!loggedIn) openAuth('signup'); else launchGame(); }
+        function openAuth() { modal.style.display = 'block'; }
+        function initGameFlow() { if(!loggedIn) openAuth(); else launchGame(); }
 
         function launchGame() {
             loggedIn = true;
-            closeModal();
+            modal.style.display = 'none';
             document.getElementById('top-nav').style.display = 'none';
             document.getElementById('home-hero').style.display = 'none';
             document.getElementById('game-view').style.display = 'block';
@@ -91,61 +79,67 @@
         function startVoidEngine() {
             const scene = new THREE.Scene();
             scene.background = new THREE.Color(0x020c1b);
-            
             const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            const renderer = new THREE.WebGLRenderer({canvas: document.getElementById('void-canvas'), antialias: true});
+            const canvas = document.getElementById('void-canvas');
+            const renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true});
             renderer.setSize(window.innerWidth, window.innerHeight);
 
-            // THE LAVA (30 Blocks Below)
-            const lavaGeo = new THREE.PlaneGeometry(500, 500);
-            const lavaMat = new THREE.MeshBasicMaterial({color: 0xff4400, side: THREE.DoubleSide});
-            const lava = new THREE.Mesh(lavaGeo, lavaMat);
-            lava.rotation.x = Math.PI / 2;
+            // Lava
+            const lava = new THREE.Mesh(new THREE.PlaneGeometry(500, 500), new THREE.MeshBasicMaterial({color: 0xff4400}));
+            lava.rotation.x = -Math.PI / 2;
             lava.position.y = -30;
             scene.add(lava);
 
-            // THE 8 TOWERS
-            const towerGeo = new THREE.BoxGeometry(6, 1, 6);
-            const towerMat = new THREE.MeshStandardMaterial({color: 0x444d56});
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-            scene.add(ambientLight);
-            const sun = new THREE.PointLight(0x64ffda, 1, 100);
-            sun.position.set(0, 20, 0);
-            scene.add(sun);
-
+            // Towers
             for(let i=0; i<8; i++) {
-                const tower = new THREE.Mesh(towerGeo, towerMat);
+                const tower = new THREE.Mesh(new THREE.BoxGeometry(8, 1, 8), new THREE.MeshStandardMaterial({color: 0x444d56}));
                 const angle = (i / 8) * Math.PI * 2;
-                tower.position.set(Math.cos(angle) * 30, 0, Math.sin(angle) * 30);
+                tower.position.set(Math.cos(angle) * 25, 0, Math.sin(angle) * 25);
                 scene.add(tower);
             }
 
-            camera.position.set(30, 3, 30);
-            camera.lookAt(0, 0, 0);
+            scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+            const light = new THREE.PointLight(0x64ffda, 1, 100);
+            light.position.set(0, 10, 0);
+            scene.add(light);
 
-            // WASD CONTROLS
+            camera.position.set(25, 3, 25);
+
+            // Controls logic
             const keys = {};
-            window.addEventListener('keydown', (e) => keys[e.key.toLowerCase()] = true);
-            window.addEventListener('keyup', (e) => keys[e.key.toLowerCase()] = false);
+            window.addEventListener('keydown', (e) => keys[e.code] = true);
+            window.addEventListener('keyup', (e) => keys[e.code] = false);
 
-            // LUCKY ITEM SYSTEM (5 SECONDS)
-            const items = ["OBSIDIAN BLOCK", "NETHER SWORD", "GRAVITY BOW", "LUCKY BOX", "ENDER SHARD"];
+            canvas.addEventListener('click', () => canvas.requestPointerLock());
+
+            let pitch = 0, yaw = 0;
+            window.addEventListener('mousemove', (e) => {
+                if (document.pointerLockElement === canvas) {
+                    yaw -= e.movementX * 0.002;
+                    pitch -= e.movementY * 0.002;
+                    pitch = Math.max(-Math.PI/2, Math.min(Math.PI/2, pitch));
+                }
+            });
+
+            const items = ["DIAMOND BLOCK", "TNT", "ENDER PEARL", "IRON SWORD"];
             setInterval(() => {
-                const item = items[Math.floor(Math.random() * items.length)];
-                document.getElementById('item-slot').innerText = item;
+                document.getElementById('item-slot').innerText = items[Math.floor(Math.random()*items.length)];
             }, 5000);
 
             function animate() {
                 requestAnimationFrame(animate);
-                if(keys['w']) camera.position.z -= 0.4;
-                if(keys['s']) camera.position.z += 0.4;
-                if(keys['a']) camera.position.x -= 0.4;
-                if(keys['d']) camera.position.x += 0.4;
-
-                if(camera.position.y < -28) {
-                    alert("VOIDCRAFT: YOU DIED IN LAVA!");
-                    camera.position.set(30, 3, 30);
+                
+                if (document.pointerLockElement === canvas) {
+                    const speed = 0.2;
+                    if(keys['KeyW']) { camera.position.x += Math.sin(yaw) * speed; camera.position.z += Math.cos(yaw) * speed; }
+                    if(keys['KeyS']) { camera.position.x -= Math.sin(yaw) * speed; camera.position.z -= Math.cos(yaw) * speed; }
+                    if(keys['KeyA']) { camera.position.x += Math.sin(yaw + Math.PI/2) * speed; camera.position.z += Math.cos(yaw + Math.PI/2) * speed; }
+                    if(keys['KeyD']) { camera.position.x -= Math.sin(yaw + Math.PI/2) * speed; camera.position.z -= Math.cos(yaw + Math.PI/2) * speed; }
                 }
+
+                camera.rotation.set(pitch, yaw, 0, 'YXZ');
+                
+                if(camera.position.y < -28) { alert("DEAD!"); camera.position.set(25, 3, 25); }
                 renderer.render(scene, camera);
             }
             animate();
