@@ -1,4 +1,4 @@
-```html
+```html id="void-fixed-full"
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -69,16 +69,19 @@ const renderer=new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(innerWidth,innerHeight);
 document.body.appendChild(renderer.domElement);
 
+/* LIGHT */
 scene.add(new THREE.AmbientLight(0xffffff,0.8));
 const light=new THREE.DirectionalLight(0xffffff,1);
 light.position.set(20,40,20);
 scene.add(light);
 
+/* PLAYER */
 const player=new THREE.Group();
 player.position.set(40,1.7,40);
 scene.add(player);
 player.add(camera);
 
+/* CONTROLS */
 const controls=new THREE.PointerLockControls(camera,document.body);
 
 document.getElementById('start').onclick=()=>controls.lock();
@@ -112,7 +115,7 @@ wall(102,50,2,100);
 /* POTATO */
 const potato=new THREE.Mesh(
 new THREE.SphereGeometry(1.5,32,32),
-new THREE.MeshStandardMaterial({color:0x6b3e1d})
+new THREE.MeshStandardMaterial({color:0x6b3e1d,roughness:1})
 );
 potato.position.set(10,2.2,10);
 scene.add(potato);
@@ -133,32 +136,35 @@ requestAnimationFrame(animate);
 
 if(controls.isLocked && !dead){
 
-let sprint=keys['ShiftLeft'] && stamina>0;
+/* SPEED */
+let sprint=(keys['ShiftLeft']&&stamina>0);
 let speed=sprint?0.3:0.15;
 
-/* STAMINA FIX */
+/* STAMINA */
 if(sprint && (keys['KeyW']||keys['KeyA']||keys['KeyS']||keys['KeyD'])){
-stamina -= 0.9;
+stamina-=0.9;
 }else{
 if(!keys['ShiftLeft']){
-stamina += 0.12; // only refill when shift NOT held
+stamina+=0.12;
 }
 }
 stamina=Math.max(0,Math.min(100,stamina));
 document.getElementById('fill').style.width=stamina+"%";
 
-/* MOVE */
-let oldX=player.position.x;
-let oldZ=player.position.z;
+/* MOVEMENT (TRUE COLLISION FIX) */
+let dx=0,dz=0;
 
-if(keys['KeyW']) controls.moveForward(speed);
-if(keys['KeyS']) controls.moveForward(-speed);
-if(keys['KeyA']) controls.moveRight(-speed);
-if(keys['KeyD']) controls.moveRight(speed);
+if(keys['KeyW']) dz-=speed;
+if(keys['KeyS']) dz+=speed;
+if(keys['KeyA']) dx-=speed;
+if(keys['KeyD']) dx+=speed;
 
-/* HARD BORDER (NO ESCAPE) */
-player.position.x=Math.max(3,Math.min(97,player.position.x));
-player.position.z=Math.max(3,Math.min(97,player.position.z));
+let newX=player.position.x+dx;
+let newZ=player.position.z+dz;
+
+/* HARD WALL BLOCK */
+if(newX>3 && newX<97) player.position.x=newX;
+if(newZ>3 && newZ<97) player.position.z=newZ;
 
 /* JUMP */
 if(keys['Space'] && canJump){
@@ -166,8 +172,8 @@ velocityY=0.22;
 canJump=false;
 }
 
-player.position.y += velocityY;
-velocityY -= 0.01;
+player.position.y+=velocityY;
+velocityY-=0.01;
 
 if(player.position.y<=1.7){
 player.position.y=1.7;
@@ -175,7 +181,7 @@ velocityY=0;
 canJump=true;
 }
 
-/* AI */
+/* POTATO AI */
 let playerPos=new THREE.Vector3();
 controls.getObject().getWorldPosition(playerPos);
 
