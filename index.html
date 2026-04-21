@@ -3,188 +3,186 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Gun Game - FPS</title>
+    <title>VOID AURA | HORROR FPS</title>
     <style>
-        body { margin: 0; overflow: hidden; background-color: #050505; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #000; color: #fff; font-family: 'Courier New', Courier, monospace; }
+        #game-wrapper { position: relative; width: 100%; height: 100vh; }
         
-        /* Menu Styling */
-        #menu {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle, #1a1a1a 0%, #000000 100%);
+        /* Horror Menu */
+        #ui-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: black;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 10;
+            z-index: 100; transition: opacity 1.5s;
         }
-        h1 {
-            color: #ff4444; font-size: 60px; letter-spacing: 5px;
-            text-transform: uppercase; margin-bottom: 20px;
-            text-shadow: 0 0 20px rgba(255, 68, 68, 0.5);
-        }
-        #play-btn {
-            padding: 15px 50px; font-size: 24px; color: white;
-            background: transparent; border: 2px solid #ff4444;
-            cursor: pointer; transition: 0.3s; text-transform: uppercase;
-        }
-        #play-btn:hover { background: #ff4444; box-shadow: 0 0 30px #ff4444; }
 
-        /* Crosshair */
-        #crosshair {
-            position: absolute; top: 50%; left: 50%;
-            width: 20px; height: 20px; border: 2px solid white;
-            border-radius: 50%; transform: translate(-50%, -50%);
-            pointer-events: none; display: none;
+        h1 { font-size: 4rem; letter-spacing: 15px; margin: 0; color: #300; text-shadow: 0 0 30px #f00; animation: flicker 2s infinite; }
+        @keyframes flicker { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } 80% { opacity: 0.9; } }
+
+        .subtitle { color: #555; margin-bottom: 50px; letter-spacing: 5px; font-size: 0.8rem; }
+
+        #play-button {
+            padding: 15px 50px; background: transparent; border: 1px solid #400;
+            color: #800; font-size: 1.5rem; cursor: pointer; transition: 0.5s;
+            letter-spacing: 10px;
+        }
+        #play-button:hover { background: #200; color: #f00; box-shadow: 0 0 40px #f00; border-color: #f00; }
+
+        #reticle {
+            position: absolute; top: 50%; left: 50%; width: 4px; height: 4px;
+            background: red; border-radius: 50%; transform: translate(-50%, -50%);
+            pointer-events: none; display: none; z-index: 50; box-shadow: 0 0 10px red;
+        }
+
+        /* Death Overlay */
+        #death-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(139, 0, 0, 0.5); display: none; z-index: 150;
+            justify-content: center; align-items: center; flex-direction: column;
         }
     </style>
 </head>
 <body>
 
-    <div id="menu">
-        <h1>GUNGAME FPS SHOOTING</h1>
-        <button id="play-btn">PLAY</button>
+<div id="game-wrapper">
+    <div id="ui-layer">
+        <h1>VOID AURA</h1>
+        <div class="subtitle">SOMETHING IS BEHIND YOU</div>
+        <button id="play-button">ENTER THE VOID</button>
     </div>
 
-    <div id="crosshair"></div>
+    <div id="death-screen">
+        <h1 style="color: white; text-shadow: none;">CAUGHT</h1>
+        <button onclick="location.reload()" style="background:none; border:1px solid white; color:white; padding:10px 20px; cursor:pointer;">TRY AGAIN</button>
+    </div>
 
-    <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    <div id="reticle"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/js/controls/PointerLockControls.js"></script>
+
+<script>
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x000000);
+    scene.fog = new THREE.Fog(0x000000, 1, 25); // Bohat zyada fog taake darr lage
+
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.getElementById('game-wrapper').appendChild(renderer.domElement);
+
+    const player = new THREE.Group();
+    player.position.set(0, 1.7, 0);
+    scene.add(player);
+    player.add(camera);
+
+    // Flashlight (Player ke paas sirf aik halki light hai)
+    const flashlight = new THREE.SpotLight(0xffffff, 2, 20, Math.PI/6, 0.5);
+    camera.add(flashlight);
+    flashlight.target.position.set(0, 0, -1);
+    camera.add(flashlight.target);
+
+    // Floor
+    const grid = new THREE.GridHelper(200, 100, 0x110000, 0x050505);
+    scene.add(grid);
+
+    // STALKER (Woh cheez jo peecha karegi)
+    const stalkerGeo = new THREE.BoxGeometry(1, 4, 1);
+    const stalkerMat = new THREE.MeshBasicMaterial({ color: 0x000000 }); // Kaali parchayi
+    const stalker = new THREE.Mesh(stalkerGeo, stalkerMat);
+    stalker.position.set(0, 2, 30); // Door se start hoga
+    scene.add(stalker);
+
+    // Gun
+    const gun = new THREE.Mesh(
+        new THREE.BoxGeometry(0.05, 0.1, 0.5),
+        new THREE.MeshStandardMaterial({ color: 0x111111 })
+    );
+    gun.position.set(0.3, -0.3, -0.5);
+    camera.add(gun);
+
+    const controls = new THREE.PointerLockControls(camera, document.body);
+    const playBtn = document.getElementById('play-button');
+    const ui = document.getElementById('ui-layer');
+
+    playBtn.onclick = () => controls.lock();
+    controls.addEventListener('lock', () => { 
+        ui.style.opacity = '0'; 
+        setTimeout(()=> ui.style.display = 'none', 1000);
+        document.getElementById('reticle').style.display = 'block';
+    });
+
+    let moveF = false, moveB = false, moveL = false, moveR = false, isCrouching = false, canJump = false;
+    let velocity = new THREE.Vector3();
+
+    document.addEventListener('keydown', (e) => {
+        if(e.code === 'KeyW') moveF = true;
+        if(e.code === 'KeyS') moveB = true;
+        if(e.code === 'KeyA') moveL = true;
+        if(e.code === 'KeyD') moveR = true;
+        if(e.code === 'Space' && canJump) { velocity.y = 7; canJump = false; }
+        if(e.code === 'ShiftLeft') isCrouching = true;
+    });
+    document.addEventListener('keyup', (e) => {
+        if(e.code === 'KeyW') moveF = false;
+        if(e.code === 'KeyS') moveB = false;
+        if(e.code === 'KeyA') moveL = false;
+        if(e.code === 'KeyD') moveR = false;
+        if(e.code === 'ShiftLeft') isCrouching = false;
+    });
+
+    let lastTime = performance.now();
+    function animate() {
+        requestAnimationFrame(animate);
+        const time = performance.now();
+        const delta = (time - lastTime) / 1000;
+
+        if (controls.isLocked) {
+            // Speed (Horror game ke liye thori slow)
+            const friction = 10, speed = 30;
+            velocity.x -= velocity.x * friction * delta;
+            velocity.z -= velocity.z * friction * delta;
+            velocity.y -= 20 * delta;
+
+            if (moveF) velocity.z -= speed * delta;
+            if (moveB) velocity.z += speed * delta;
+            if (moveL) velocity.x -= speed * delta;
+            if (moveR) velocity.x += speed * delta;
+
+            controls.moveRight(velocity.x * delta);
+            controls.moveForward(-velocity.z * delta);
+
+            let tH = isCrouching ? 0.8 : 1.7;
+            player.position.y += (tH - player.position.y) * 0.1;
+            player.position.y += velocity.y * delta;
+
+            if (player.position.y < tH) { velocity.y = 0; player.position.y = tH; canJump = true; }
+
+            // STALKER AI (Peecha karne wali cheez)
+            const stalkerSpeed = 3.5; // Player se thora slow taake bhag saken
+            const dir = new THREE.Vector3().subVectors(player.position, stalker.position).normalize();
+            stalker.position.x += dir.x * stalkerSpeed * delta;
+            stalker.position.z += dir.z * stalkerSpeed * delta;
+            stalker.lookAt(player.position.x, 2, player.position.z);
+
+            // Distance Check (Agar stalker qareeb aa gaya)
+            const dist = player.position.distanceTo(stalker.position);
+            if(dist < 2) {
+                document.getElementById('death-screen').style.display = 'flex';
+                controls.unlock();
             }
         }
-    </script>
+        lastTime = time;
+        renderer.render(scene, camera);
+    }
+    animate();
 
-    <script type="module">
-        import * as THREE from 'three';
-        import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
-
-        // 1. Scene Setup
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x0a0a0a);
-        scene.fog = new THREE.Fog(0x0a0a0a, 0, 50);
-
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(renderer.domElement);
-
-        // 2. Lights
-        const light = new THREE.HemisphereLight(0xeeeeee, 0x888888, 1.5);
-        scene.add(light);
-
-        // 3. Floor (Grid)
-        const grid = new THREE.GridHelper(100, 50, 0xff4444, 0x222222);
-        scene.add(grid);
-
-        // 4. Player Controls
-        const controls = new PointerLockControls(camera, document.body);
-        const playBtn = document.getElementById('play-btn');
-        const menu = document.getElementById('menu');
-        const crosshair = document.getElementById('crosshair');
-
-        playBtn.addEventListener('click', () => {
-            controls.lock();
-        });
-
-        controls.addEventListener('lock', () => {
-            menu.style.display = 'none';
-            crosshair.style.display = 'block';
-        });
-
-        controls.addEventListener('unlock', () => {
-            menu.style.display = 'flex';
-            crosshair.style.display = 'none';
-        });
-
-        // 5. Gun (Simple Placeholder)
-        const gunGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.5);
-        const gunMaterial = new THREE.MeshPhongMaterial({ color: 0x333333 });
-        const gun = new THREE.Mesh(gunGeometry, gunMaterial);
-        camera.add(gun);
-        gun.position.set(0.3, -0.2, -0.5);
-        scene.add(camera);
-
-        // 6. Targets (Enemies)
-        const enemies = [];
-        for(let i=0; i<10; i++) {
-            const mesh = new THREE.Mesh(
-                new THREE.BoxGeometry(1, 2, 1),
-                new THREE.MeshPhongMaterial({ color: 0xff0000 })
-            );
-            mesh.position.set(Math.random()*40-20, 1, Math.random()*40-20);
-            scene.add(mesh);
-            enemies.push(mesh);
-        }
-
-        // 7. Shooting Logic
-        window.addEventListener('mousedown', () => {
-            if (controls.isLocked) {
-                // Muzzle flash effect
-                gun.position.z += 0.05;
-                setTimeout(() => gun.position.z -= 0.05, 50);
-
-                // Simple Raycaster for shooting
-                const raycaster = new THREE.Raycaster();
-                raycaster.setFromCamera(new THREE.Vector2(0,0), camera);
-                const intersects = raycaster.intersectObjects(enemies);
-                
-                if (intersects.length > 0) {
-                    intersects[0].object.position.y = -5; // Hit target
-                }
-            }
-        });
-
-        // 8. Movement
-        let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
-        const velocity = new THREE.Vector3();
-        const direction = new THREE.Vector3();
-
-        const onKeyDown = (e) => {
-            if(e.code === 'KeyW') moveForward = true;
-            if(e.code === 'KeyS') moveBackward = true;
-            if(e.code === 'KeyA') moveLeft = true;
-            if(e.code === 'KeyD') moveRight = true;
-        };
-        const onKeyUp = (e) => {
-            if(e.code === 'KeyW') moveForward = false;
-            if(e.code === 'KeyS') moveBackward = false;
-            if(e.code === 'KeyA') moveLeft = false;
-            if(e.code === 'KeyD') moveRight = false;
-        };
-        document.addEventListener('keydown', onKeyDown);
-        document.addEventListener('keyup', onKeyUp);
-
-        // 9. Animation Loop
-        function animate() {
-            requestAnimationFrame(animate);
-
-            if (controls.isLocked) {
-                const delta = 0.15;
-                velocity.x -= velocity.x * 10.0 * delta;
-                velocity.z -= velocity.z * 10.0 * delta;
-
-                direction.z = Number(moveForward) - Number(moveBackward);
-                direction.x = Number(moveRight) - Number(moveLeft);
-                direction.normalize();
-
-                if (moveForward || moveBackward) velocity.z -= direction.z * 400.0 * delta;
-                if (moveLeft || moveRight) velocity.x -= direction.x * 400.0 * delta;
-
-                controls.moveRight(-velocity.x * delta);
-                controls.moveForward(-velocity.z * delta);
-            }
-
-            renderer.render(scene, camera);
-        }
-        animate();
-
-        // Handle Resize
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-
-    </script>
+    });
+</script>
 </body>
 </html>
