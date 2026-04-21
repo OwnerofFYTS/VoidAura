@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>VOID AURA FIX</title>
+<title>VOID AURA FIXED AI</title>
 
 <style>
 body,html{margin:0;padding:0;overflow:hidden;background:#000;font-family:sans-serif;}
@@ -24,10 +24,10 @@ border-radius:10px;
 cursor:pointer;
 }
 
-/* CROSSHAIR (NOT REMOVED) */
+/* CROSSHAIR */
 #crosshair{
 position:absolute;top:50%;left:50%;
-width:16px;height:16px;
+width:14px;height:14px;
 transform:translate(-50%,-50%);
 z-index:5;
 pointer-events:none;
@@ -68,7 +68,6 @@ const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x111111);
 
 const camera=new THREE.PerspectiveCamera(75,innerWidth/innerHeight,0.1,1000);
-
 const renderer=new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(innerWidth,innerHeight);
 document.body.appendChild(renderer.domElement);
@@ -104,7 +103,7 @@ new THREE.MeshStandardMaterial({color:0x228B22})
 ground.rotation.x=-Math.PI/2;
 scene.add(ground);
 
-/* POTATO (FOLLOW AI) */
+/* POTATO (ENEMY) */
 const potato=new THREE.Mesh(
 new THREE.SphereGeometry(1.5,32,32),
 new THREE.MeshStandardMaterial({color:0x8B4513})
@@ -117,7 +116,7 @@ let keys={};
 onkeydown=e=>keys[e.code]=true;
 onkeyup=e=>keys[e.code]=false;
 
-/* GAME VALUES */
+/* VALUES */
 let stamina=100;
 let velocityY=0;
 let canJump=true;
@@ -135,17 +134,17 @@ crouch = keys['KeyC'];
 let targetHeight = crouch ? 1.0 : 1.7;
 player.position.y += (targetHeight - player.position.y)*0.15;
 
-/* SPRINT */
+/* SPEED */
 let sprint = keys['ShiftLeft'] && stamina>0;
-let speed = sprint ? 0.28 : 0.14;
+let speed = sprint ? 0.3 : 0.15;
 
 /* STAMINA */
 if(sprint && (keys['KeyW']||keys['KeyA']||keys['KeyS']||keys['KeyD'])){
-stamina -= 0.7;
+stamina -= 0.8;
 }else{
 stamina += 0.4;
 }
-stamina = Math.max(0,Math.min(100,stamina));
+stamina=Math.max(0,Math.min(100,stamina));
 document.getElementById('fill').style.width=stamina+"%";
 
 /* MOVE */
@@ -159,7 +158,7 @@ if(keys['KeyD']) controls.moveRight(speed);
 
 /* JUMP */
 if(keys['Space'] && canJump){
-velocityY=0.2;
+velocityY=0.22;
 canJump=false;
 }
 
@@ -176,25 +175,28 @@ canJump = true;
 if(player.position.x<2||player.position.x>98) player.position.x=oldX;
 if(player.position.z<2||player.position.z>98) player.position.z=oldZ;
 
-/* 🔥 REAL FOLLOW AI */
-let dir=new THREE.Vector3().subVectors(player.position,potato.position);
-dir.y=0;
+/* 🔥 FIXED FOLLOW AI (REAL PLAYER TRACKING) */
+let playerPos = new THREE.Vector3();
+controls.getObject().getWorldPosition(playerPos);
+
+let dir = new THREE.Vector3().subVectors(playerPos,potato.position);
+dir.y = 0;
 dir.normalize();
 
-/* speed depends on distance (smarter chase) */
-let dist = player.position.distanceTo(potato.position);
-let chaseSpeed = dist > 10 ? 0.22 : 0.16;
+/* dynamic chase */
+let dist = potato.position.distanceTo(playerPos);
+let chaseSpeed = dist > 8 ? 0.25 : 0.18;
 
 potato.position.add(dir.multiplyScalar(chaseSpeed));
 
-potato.lookAt(player.position.x,1.7,player.position.z);
+potato.lookAt(playerPos.x,playerPos.y,playerPos.z);
 
 /* COLLISION */
 if(dist < 1.4){
 dead=true;
 controls.unlock();
-alert("MASHED!");
-location.reload();
+document.getElementById('ui').style.display='flex';
+document.getElementById('ui').innerHTML="<h1 style='color:red'>MASHED!</h1><button onclick='location.reload()'>RETRY</button>";
 }
 
 }
