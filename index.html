@@ -3,31 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VOID AURA | HORROR PROTOCOL</title>
+    <title>VOID AURA | POTATO PROTOCOL</title>
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #000; color: #fff; font-family: 'Courier New', Courier, monospace; }
         #game-wrapper { position: relative; width: 100%; height: 100vh; }
         
         #ui-layer {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle, #1a0000 0%, #000 100%);
+            background: radial-gradient(circle, #1a0a00 0%, #000 100%);
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             z-index: 1000; transition: opacity 0.8s;
         }
 
-        h1 { font-size: 4rem; letter-spacing: 12px; margin: 0; color: #fff; text-shadow: 0 0 20px #f00; }
-        #play-button { padding: 15px 60px; background: transparent; border: 2px solid #ff3e3e; color: #ff3e3e; font-size: 1.2rem; cursor: pointer; letter-spacing: 5px; font-weight: bold; margin-top: 20px;}
+        h1 { font-size: 4rem; letter-spacing: 12px; margin: 0; color: #fff; text-shadow: 0 0 20px #ffaa00; }
+        #play-button { padding: 15px 60px; background: transparent; border: 2px solid #ffaa00; color: #ffaa00; font-size: 1.2rem; cursor: pointer; letter-spacing: 5px; font-weight: bold; margin-top: 20px;}
 
         #stamina-container {
             position: fixed; bottom: 50px; left: 50%; transform: translateX(-50%);
-            width: 250px; height: 15px; border: 2px solid #600; background: rgba(0,0,0,0.9);
+            width: 250px; height: 15px; border: 2px solid #630; background: rgba(0,0,0,0.9);
             display: none; z-index: 9999;
         }
-        #stamina-bar { width: 100%; height: 100%; background: #ff0000; box-shadow: 0 0 10px #f00; }
+        #stamina-bar { width: 100%; height: 100%; background: #ffaa00; box-shadow: 0 0 10px #f90; }
 
-        #reticle { position: absolute; top: 50%; left: 50%; width: 6px; height: 6px; background: red; border-radius: 50%; transform: translate(-50%, -50%); display: none; z-index: 500; }
+        #reticle { position: absolute; top: 50%; left: 50%; width: 6px; height: 6px; background: #ffaa00; border-radius: 50%; transform: translate(-50%, -50%); display: none; z-index: 500; }
 
-        #game-over { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(40, 0, 0, 0.95); display: none; z-index: 2000; flex-direction: column; justify-content: center; align-items: center; }
+        #game-over { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(30, 15, 0, 0.95); display: none; z-index: 2000; flex-direction: column; justify-content: center; align-items: center; }
     </style>
 </head>
 <body>
@@ -35,12 +35,13 @@
 <div id="game-wrapper">
     <div id="ui-layer">
         <h1>VOID AURA</h1>
+        <p style="color: #666; letter-spacing: 3px;">THE POTATO IS WATCHING</p>
         <button id="play-button">PLAY</button>
     </div>
     <div id="stamina-container"><div id="stamina-bar"></div></div>
     <div id="game-over">
-        <h1 style="color: #f00;">GAME OVER</h1>
-        <button onclick="location.reload()" style="background:none; border:1px solid #fff; color:#fff; padding:10px 20px; cursor:pointer;">RESTART</button>
+        <h1 style="color: #ffaa00; text-shadow: 0 0 20px black;">MASHED!</h1>
+        <button onclick="location.reload()" style="background:none; border:1px solid #fff; color:#fff; padding:10px 20px; cursor:pointer; margin-top: 20px;">RESTART</button>
     </div>
     <div id="reticle"></div>
 </div>
@@ -50,8 +51,8 @@
 
 <script>
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x020202);
-    scene.fog = new THREE.Fog(0x020202, 1, 45);
+    scene.background = new THREE.Color(0x020100);
+    scene.fog = new THREE.Fog(0x020100, 1, 45);
 
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -63,26 +64,32 @@
     scene.add(player);
     player.add(camera);
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.1));
-    const flashlight = new THREE.SpotLight(0xffffff, 2.5, 40, Math.PI/4, 0.3);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.05));
+    const flashlight = new THREE.SpotLight(0xffeebb, 2.5, 40, Math.PI/4, 0.3);
     camera.add(flashlight);
     flashlight.target.position.set(0, 0, -1);
     camera.add(flashlight.target);
 
-    const grid = new THREE.GridHelper(300, 100, 0x440000, 0x111111);
+    const grid = new THREE.GridHelper(300, 100, 0x332200, 0x080500);
     scene.add(grid);
 
-    const stalker = new THREE.Mesh(
-        new THREE.BoxGeometry(1.5, 3.5, 1.5),
-        new THREE.MeshBasicMaterial({ color: 0xff0000 })
-    );
+    // --- POTATO STALKER ---
+    const potatoTex = new THREE.TextureLoader().load('https://threejs.org/examples/textures/uv_grid_opengl.jpg'); 
+    // Is texture ko aap kisi real potato image link se bhi badal sakte hain
+    const stalkerGeo = new THREE.SphereGeometry(1.2, 16, 16);
+    stalkerGeo.scale(1, 1.4, 1); // Potato shape
+    const stalkerMat = new THREE.MeshStandardMaterial({ 
+        color: 0x8b4513, 
+        roughness: 0.9, 
+        metalness: 0.1 
+    });
+    const stalker = new THREE.Mesh(stalkerGeo, stalkerMat);
     stalker.position.set(0, 1.75, 35);
     scene.add(stalker);
 
     const controls = new THREE.PointerLockControls(camera, document.body);
     const playBtn = document.getElementById('play-button');
     
-    // FULLSCREEN TRIGGER
     playBtn.onclick = () => {
         controls.lock();
         let elem = document.documentElement;
@@ -171,13 +178,16 @@
             player.position.y += (tH - player.position.y) * 0.1 + velocity.y * delta;
             if (player.position.y < tH) { velocity.y = 0; player.position.y = tH; canJump = true; }
 
+            // Potato AI
             const dir = new THREE.Vector3().subVectors(player.position, stalker.position);
             dir.y = 0; dir.normalize();
             stalker.position.x += dir.x * (25.5 * 0.13) * delta; 
             stalker.position.z += dir.z * (25.5 * 0.13) * delta;
             stalker.lookAt(player.position.x, 1.75, player.position.z);
+            stalker.rotation.x += delta; // Potato rolling effect
 
-            if(player.position.distanceTo(stalker.position) < 0.3) {
+            // Hitbox Fix: Distance 1.2 (Qareeb se kill karega par ghussega nahi)
+            if(player.position.distanceTo(stalker.position) < 1.2) {
                 document.getElementById('game-over').style.display = 'flex';
                 controls.unlock();
             }
