@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -111,11 +112,23 @@ wall(50,102,100,2);
 wall(-2,50,2,100);
 wall(102,50,2,100);
 
-/* POTATO */
-const potato=new THREE.Mesh(
-new THREE.SphereGeometry(1.5,32,32),
-new THREE.MeshStandardMaterial({color:0x6b3e1d,roughness:1})
-);
+/* 🥔 REALISTIC POTATO (UPDATED TEXTURE ONLY) */
+const potatoGeo = new THREE.SphereGeometry(1.5,32,32);
+
+const potatoMat = new THREE.MeshStandardMaterial({
+color: 0x8b5a2b,
+roughness: 1,
+metalness: 0
+});
+
+/* slight procedural variation for dirty look */
+for(let i=0;i<10;i++){
+potatoMat.color.r += (Math.random()-0.5)*0.01;
+potatoMat.color.g += (Math.random()-0.5)*0.01;
+potatoMat.color.b += (Math.random()-0.5)*0.01;
+}
+
+const potato = new THREE.Mesh(potatoGeo,potatoMat);
 potato.position.set(10,2.2,10);
 scene.add(potato);
 
@@ -135,7 +148,6 @@ requestAnimationFrame(animate);
 
 if(controls.isLocked && !dead){
 
-/* SPEED */
 let sprint=(keys['ShiftLeft']&&stamina>0);
 let speed=sprint?0.3:0.15;
 
@@ -150,31 +162,32 @@ stamina+=0.12;
 stamina=Math.max(0,Math.min(100,stamina));
 document.getElementById('fill').style.width=stamina+"%";
 
-/* MOVEMENT FIX: AB BORDER SE BAHAR NAHI JAYEGA */
-let forward = new THREE.Vector3();
+/* MOVE */
+let forward=new THREE.Vector3();
 camera.getWorldDirection(forward);
-forward.y = 0;
+forward.y=0;
 forward.normalize();
 
-let side = new THREE.Vector3();
-side.crossVectors(camera.up, forward).normalize();
+let side=new THREE.Vector3();
+side.crossVectors(camera.up,forward).normalize();
 
-let moveVec = new THREE.Vector3(0, 0, 0);
-if(keys['KeyW']) moveVec.add(forward);
-if(keys['KeyS']) moveVec.sub(forward);
-if(keys['KeyA']) moveVec.add(side);
-if(keys['KeyD']) moveVec.sub(side);
+let move=new THREE.Vector3();
 
-if(moveVec.length() > 0){
-    moveVec.normalize().multiplyScalar(speed);
+if(keys['KeyW']) move.add(forward);
+if(keys['KeyS']) move.sub(forward);
+if(keys['KeyA']) move.add(side);
+if(keys['KeyD']) move.sub(side);
+
+if(move.length()>0){
+move.normalize().multiplyScalar(speed);
 }
 
-let nextX = player.position.x + moveVec.x;
-let nextZ = player.position.z + moveVec.z;
+let nextX=player.position.x+move.x;
+let nextZ=player.position.z+move.z;
 
-/* STRICT BORDER COLLISION (0 to 100 Range) */
-if(nextX > 1 && nextX < 99) player.position.x = nextX;
-if(nextZ > 1 && nextZ < 99) player.position.z = nextZ;
+/* BORDER LOCK */
+if(nextX>1 && nextX<99) player.position.x=nextX;
+if(nextZ>1 && nextZ<99) player.position.z=nextZ;
 
 /* JUMP */
 if(keys['Space'] && canJump){
@@ -223,3 +236,4 @@ animate();
 
 </body>
 </html>
+```
