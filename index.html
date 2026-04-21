@@ -2,84 +2,86 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>VOID AURA - DEBUG VERSION</title>
+    <title>VOID AURA - FINAL FIX</title>
     <style>
-        body, html { margin: 0; padding: 0; overflow: hidden; background: #111; }
-        #ui { position: absolute; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #000; color: #fff; z-index: 100; font-family: sans-serif; }
-        #start { padding: 20px 60px; font-size: 24px; background: #f00; color: #fff; border: none; cursor: pointer; }
+        body, html { margin: 0; padding: 0; overflow: hidden; background: #000; }
+        #ui { position: absolute; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #000; color: #fff; z-index: 100; font-family: sans-serif; text-align: center; }
+        #start { padding: 20px 60px; font-size: 24px; background: #f00; color: #fff; border: none; cursor: pointer; font-weight: bold; }
+        #stamina-bar { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 200px; height: 10px; background: #333; border: 1px solid #555; }
+        #fill { height: 100%; width: 100%; background: #ff0000; transition: width 0.1s; }
     </style>
 </head>
 <body>
 
 <div id="ui">
-    <h1 style="color:red">GHOST TEST MODE</h1>
-    <p>Agar Ghost nazar na aaye toh Red Box ko dekhein</p>
-    <button id="start">START GAME</button>
+    <h1 style="color:red; font-size: 40px;">VOID AURA</h1>
+    <button id="start">CLICK TO START</button>
+    <p style="color: #666;">WASD = Move | Space = Jump | C = Crouch | Shift = Run</p>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/js/controls/PointerLockControls.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/js/loaders/GLTFLoader.js"></script>
+<div id="stamina-bar"><div id="fill"></div></div>
+
+<script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/controls/PointerLockControls.js"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 
 <script>
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x111111); // Thoda greyish taaki andhera na ho
+    scene.background = new THREE.Color(0x111111); // Gray background (No more blurry black)
 
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
-    // --- TEZ LIGHTS ---
-    const ambient = new THREE.AmbientLight(0xffffff, 2); 
-    scene.add(ambient);
-    const pointLight = new THREE.PointLight(0xffffff, 2);
-    camera.add(pointLight); // Camera ke saath light attach kar di
-    scene.add(camera);
+    // --- BRIGHT LIGHTING ---
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.5); 
+    scene.add(ambientLight);
+    const sunLight = new THREE.DirectionalLight(0xffffff, 1);
+    sunLight.position.set(5, 10, 7);
+    scene.add(sunLight);
 
     const controls = new THREE.PointerLockControls(camera, document.body);
-    document.getElementById('start').onclick = () => controls.lock();
-    controls.addEventListener('lock', () => document.getElementById('ui').style.display = 'none');
+    const startBtn = document.getElementById('start');
 
-    // Ground for Reference
+    startBtn.onclick = () => {
+        controls.lock();
+        window.focus(); // Force keyboard focus
+    };
+
+    controls.addEventListener('lock', () => document.getElementById('ui').style.display = 'none');
+    controls.addEventListener('unlock', () => document.getElementById('ui').style.display = 'flex');
+
+    // Ground
     const ground = new THREE.Mesh(
         new THREE.PlaneGeometry(100, 100), 
-        new THREE.MeshStandardMaterial({ color: 0x333333, side: THREE.DoubleSide })
+        new THREE.MeshStandardMaterial({ color: 0x222222 })
     );
-    ground.rotation.x = Math.PI / 2;
+    ground.rotation.x = -Math.PI / 2;
     scene.add(ground);
 
-    /* --- TEST RED CUBE (Agar ghost na dikhe toh ye dikhega) --- */
-    const testBox = new THREE.Mesh(
-        new THREE.BoxGeometry(1, 2, 1),
-        new THREE.MeshStandardMaterial({ color: 0xff0000 })
-    );
-    testBox.position.set(0, 1, -5); // Bilkul samne
-    scene.add(testBox);
-
-    /* --- GHOST LOADING --- */
+    /* --- GHOST GIRL --- */
     let ghost = null, mixer = null;
     const clock = new THREE.Clock();
     const loader = new THREE.GLTFLoader();
 
     loader.load('./ghost_girl.glb', (gltf) => {
-        console.log("Model loaded!");
         ghost = gltf.scene;
         ghost.scale.set(1.5, 1.5, 1.5);
-        ghost.position.set(0, 0, -5); // Red box ki jagah
+        ghost.position.set(0, 0, -8); // Exactly 8 units in front
         scene.add(ghost);
-        scene.remove(testBox); // Ghost aate hi dabba hata do
-
         mixer = new THREE.AnimationMixer(ghost);
         if (gltf.animations.length > 0) mixer.clipAction(gltf.animations[0]).play();
-    }, undefined, (err) => {
-        console.error("Model Error:", err);
-    });
+    }, undefined, (err) => console.error("Model Missing:", err));
 
-    const keys = {};
-    document.onkeydown = (e) => keys[e.code] = true;
-    document.onkeyup = (e) => keys[e.code] = false;
+    // --- MOVEMENT SYSTEM ---
+    let keys = {};
+    document.addEventListener('keydown', (e) => { keys[e.code] = true; });
+    document.addEventListener('keyup', (e) => { keys[e.code] = false; });
 
+    let velocityY = 0;
+    let isJumping = false;
+    let stamina = 100;
     camera.position.y = 1.7;
 
     function animate() {
@@ -88,11 +90,48 @@
         if (mixer) mixer.update(delta);
 
         if (controls.isLocked) {
-            let speed = 0.1;
+            // Speed Settings
+            let sprinting = keys['ShiftLeft'] && stamina > 0;
+            let crouching = keys['KeyC'];
+            let speed = sprinting ? 0.3 : (crouching ? 0.07 : 0.15);
+
+            // Stamina Logic
+            if (sprinting) stamina -= 0.5; else stamina += 0.2;
+            stamina = Math.max(0, Math.min(100, stamina));
+            document.getElementById('fill').style.width = stamina + "%";
+
+            // Movement (WASD)
             if (keys['KeyW']) controls.moveForward(speed);
             if (keys['KeyS']) controls.moveForward(-speed);
             if (keys['KeyA']) controls.moveRight(-speed);
             if (keys['KeyD']) controls.moveRight(speed);
+
+            // Jump Logic
+            if (keys['Space'] && !isJumping) {
+                velocityY = 0.2;
+                isJumping = true;
+            }
+
+            // Crouch Logic
+            let targetH = crouching ? 0.8 : 1.7;
+            camera.position.y += (targetH - camera.position.y) * 0.1;
+
+            // Gravity for Jump
+            camera.position.y += velocityY;
+            velocityY -= 0.01;
+            if (camera.position.y < targetH) {
+                camera.position.y = targetH;
+                velocityY = 0;
+                isJumping = false;
+            }
+
+            // Ghost AI
+            if (ghost) {
+                let dir = new THREE.Vector3().subVectors(camera.position, ghost.position);
+                dir.y = 0; dir.normalize();
+                ghost.position.add(dir.multiplyScalar(0.04));
+                ghost.lookAt(camera.position.x, 0, camera.position.z);
+            }
         }
         renderer.render(scene, camera);
     }
