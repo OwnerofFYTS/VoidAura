@@ -2,71 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>MOVEMENT DEBUG TEST</title>
-    <style>
-        body, html { margin: 0; padding: 0; overflow: hidden; background: #444; font-family: sans-serif; }
-        #ui { position: absolute; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(0,0,0,0.9); color: #fff; z-index: 100; text-align: center; }
-        #start { padding: 20px 60px; font-size: 24px; background: white; color: black; border: none; cursor: pointer; font-weight: bold; }
-    </style>
+    <title>Horror Game Prototype</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-<div id="ui">
-    <h1>MOVEMENT CHECK</h1>
-    <p>Agar Blue background dikhayi de, toh mouse hila kar dekhein.</p>
-    <button id="start">CLICK TO START</button>
-</div>
-
-<script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
-<script src="https://unpkg.com/three@0.128.0/examples/js/controls/PointerLockControls.js"></script>
-
-<script>
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x87CEEB); // Sky Blue (Aasman)
-
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
-
-    const light = new THREE.AmbientLight(0xffffff, 1);
-    scene.add(light);
-
-    const controls = new THREE.PointerLockControls(camera, document.body);
-    document.getElementById('start').onclick = () => controls.lock();
-    controls.addEventListener('lock', () => document.getElementById('ui').style.display = 'none');
-
-    // Zameen par Checkered Pattern (Shatranj jaisa)
-    const size = 1000;
-    const divisions = 100;
-    const gridHelper = new THREE.GridHelper(size, divisions, 0xff0000, 0x000000);
-    scene.add(gridHelper);
-
-    // --- BIG RED BLOCK (TARGET) ---
-    const boxGeo = new THREE.BoxGeometry(5, 5, 5);
-    const boxMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-    const targetBox = new THREE.Mesh(boxGeo, boxMat);
-    targetBox.position.set(0, 2.5, -20); // 20 units door
-    scene.add(targetBox);
-
-    const keys = {};
-    window.onkeydown = (e) => keys[e.code] = true;
-    window.onkeyup = (e) => keys[e.code] = false;
-
-    camera.position.y = 2; // Thoda upar taaki zameen dikhe
-
-    function animate() {
-        requestAnimationFrame(animate);
-        if (controls.isLocked) {
-            let speed = 0.2;
-            if (keys['KeyW']) controls.moveForward(speed);
-            if (keys['KeyS']) controls.moveForward(-speed);
-            if (keys['KeyA']) controls.moveRight(-speed);
-            if (keys['KeyD']) controls.moveRight(speed);
-        }
-        renderer.render(scene, camera);
-    }
-    animate();
-</script>
+    <div id="game-ui">
+        <div id="stamina-container">
+            <div id="stamina-bar"></div>
+        </div>
+        <p id="status">Explore the dark...</p>
+    </div>
+    <canvas id="gameCanvas"></canvas>
+    <script src="script.js"></script>
 </body>
 </html>
