@@ -3,34 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horror AI Game</title>
+    <title>Horror AI Game - Pro</title>
     <style>
         body { margin: 0; background-color: #000; color: white; font-family: sans-serif; overflow: hidden; }
-        
-        /* Menu Screen */
-        #menu {
-            position: absolute; width: 100%; height: 100%;
-            background: #000; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; z-index: 100;
-        }
-        
-        button {
-            padding: 20px 50px; font-size: 24px; background: #900;
-            color: white; border: none; cursor: pointer; border-radius: 5px;
-        }
-        
-        button:hover { background: #f00; }
-
-        #ui { position: absolute; top: 20px; left: 20px; font-size: 1.5rem; color: red; z-index: 10; display: none; }
+        #menu { position: absolute; width: 100%; height: 100%; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; }
+        button { padding: 20px 50px; font-size: 24px; background: #900; color: white; border: none; cursor: pointer; border-radius: 5px; }
+        #ui { position: absolute; top: 20px; left: 20px; font-size: 1.2rem; color: white; z-index: 10; display: none; }
+        #stamina-bar { width: 200px; height: 10px; background: #333; margin-top: 5px; border: 1px solid white; }
+        #stamina-fill { width: 100%; height: 100%; background: lime; transition: 0.1s; }
     </style>
 </head>
 <body>
 
-    <div id="ui">RUN! GHOST IS <span id="dist">--</span>m AWAY</div>
+    <div id="ui">
+        RUN! GHOST IS <span id="dist">--</span>m AWAY
+        <div id="stamina-bar"><div id="stamina-fill"></div></div>
+        <small>[SHIFT] Sprint | [SPACE] Jump | [C] Crouch</small>
+    </div>
 
     <div id="menu">
         <h1 style="color: red; font-size: 40px;">GHOST ATTACK AI</h1>
-        <p>Use W, A, S, D to Move | Mouse to Look</p>
         <button id="playBtn">PLAY GAME</button>
     </div>
 
@@ -40,10 +32,13 @@
     <script>
         let scene, camera, renderer, controls, ghost;
         let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
+        let isSprinting = false, isCrouching = false, canJump = true;
+        let stamina = 100;
+        let velocityY = 0; 
+        const gravity = 0.01;
         let gameStarted = false;
 
         function init() {
-            // 1. Scene & Camera
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x050505);
             scene.fog = new THREE.Fog(0x000000, 1, 15);
@@ -51,83 +46,91 @@
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             camera.position.y = 1.6;
 
-            // 2. Renderer
             renderer = new THREE.WebGLRenderer();
             renderer.setSize(window.innerWidth, window.innerHeight);
             document.body.appendChild(renderer.domElement);
 
-            // 3. Ground (Taaki andhera na lage)
-            const ground = new THREE.Mesh(
-                new THREE.PlaneGeometry(100, 100),
-                new THREE.MeshPhongMaterial({ color: 0x222222 })
-            );
+            const ground = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshPhongMaterial({ color: 0x222222 }));
             ground.rotation.x = -Math.PI / 2;
             scene.add(ground);
 
-            // 4. Lights (Aapke hath mein flashlight)
             const light = new THREE.PointLight(0xffffff, 2, 10);
             camera.add(light);
             scene.add(camera);
 
-            // 5. Ghost AI (White Box jo peecha karega)
             const ghostGeo = new THREE.BoxGeometry(0.5, 1.8, 0.5);
             const ghostMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
             ghost = new THREE.Mesh(ghostGeo, ghostMat);
             ghost.position.set(5, 0.9, -5);
             scene.add(ghost);
 
-            // 6. Controls
             controls = new THREE.PointerLockControls(camera, document.body);
-
-            const playBtn = document.getElementById('playBtn');
-            playBtn.addEventListener('click', () => {
+            document.getElementById('playBtn').addEventListener('click', () => {
                 controls.lock();
                 document.getElementById('menu').style.display = 'none';
                 document.getElementById('ui').style.display = 'block';
                 gameStarted = true;
             });
 
-            // Keyboard Events
-            const onKeyDown = (e) => {
+            // Input Handlers
+            document.addEventListener('keydown', (e) => {
                 if(e.code === 'KeyW') moveForward = true;
                 if(e.code === 'KeyS') moveBackward = true;
                 if(e.code === 'KeyA') moveLeft = true;
                 if(e.code === 'KeyD') moveRight = true;
-            };
-            const onKeyUp = (e) => {
+                if(e.shiftKey) isSprinting = true;
+                if(e.code === 'Space' && canJump) { velocityY = 0.2; canJump = false; }
+                if(e.code === 'KeyC') { isCrouching = true; camera.position.y = 0.8; }
+            });
+
+            document.addEventListener('keyup', (e) => {
                 if(e.code === 'KeyW') moveForward = false;
                 if(e.code === 'KeyS') moveBackward = false;
                 if(e.code === 'KeyA') moveLeft = false;
                 if(e.code === 'KeyD') moveRight = false;
-            };
-            document.addEventListener('keydown', onKeyDown);
-            document.addEventListener('keyup', onKeyUp);
+                if(!e.shiftKey) isSprinting = false;
+                if(e.code === 'KeyC') { isCrouching = false; camera.position.y = 1.6; }
+            });
 
             animate();
         }
 
         function animate() {
             requestAnimationFrame(animate);
-
             if (gameStarted && controls.isLocked) {
-                // Player Move
-                if (moveForward) controls.moveForward(0.05);
-                if (moveBackward) controls.moveForward(-0.05);
-                if (moveLeft) controls.moveRight(-0.05);
-                if (moveRight) controls.moveRight(0.05);
+                // Movement Speed Logic
+                let currentSpeed = isCrouching ? 0.02 : 0.05;
+                if (isSprinting && stamina > 0 && moveForward) {
+                    currentSpeed = 0.12;
+                    stamina -= 0.5;
+                } else if (stamina < 100) {
+                    stamina += 0.2;
+                }
+                document.getElementById('stamina-fill').style.width = stamina + '%';
 
-                // Ghost AI: Player ka peecha karna
+                if (moveForward) controls.moveForward(currentSpeed);
+                if (moveBackward) controls.moveForward(-currentSpeed);
+                if (moveLeft) controls.moveRight(-currentSpeed);
+                if (moveRight) controls.moveRight(currentSpeed);
+
+                // Jump & Gravity Logic
+                camera.position.y += velocityY;
+                if (camera.position.y > (isCrouching ? 0.8 : 1.6)) {
+                    velocityY -= gravity;
+                } else {
+                    camera.position.y = isCrouching ? 0.8 : 1.6;
+                    velocityY = 0;
+                    canJump = true;
+                }
+
+                // Ghost AI (1% faster speed: 0.025 * 1.01 ≈ 0.02525)
                 ghost.lookAt(camera.position.x, 0.9, camera.position.z);
-                const ghostSpeed = 0.025;
-                
-                // Move ghost towards player
+                const ghostSpeed = 0.02525;
                 if (ghost.position.x < camera.position.x) ghost.position.x += ghostSpeed;
                 else ghost.position.x -= ghostSpeed;
-                
                 if (ghost.position.z < camera.position.z) ghost.position.z += ghostSpeed;
                 else ghost.position.z -= ghostSpeed;
 
-                // Distance Check
                 let d = camera.position.distanceTo(ghost.position);
                 document.getElementById('dist').innerText = d.toFixed(1);
 
@@ -136,10 +139,8 @@
                     location.reload();
                 }
             }
-
             renderer.render(scene, camera);
         }
-
         init();
     </script>
 </body>
