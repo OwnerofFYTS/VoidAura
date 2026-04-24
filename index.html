@@ -14,7 +14,7 @@
             overflow: hidden;
         }
 
-        /* Flashlight - pointer-events none taake button click ho sake */
+        /* Flashlight - pointer-events none taake clicks neeche ja saken */
         #flashlight {
             position: fixed;
             top: 0; left: 0;
@@ -35,20 +35,19 @@
 
         #game-content {
             text-align: center;
-            transition: transform 0.1s linear;
         }
 
         h1 { font-size: 4rem; letter-spacing: 15px; text-shadow: 0 0 10px #ff0000; }
 
         .btn-start {
             padding: 15px 30px;
-            background: transparent;
+            background: #111;
             border: 1px solid #4a0000;
             color: #8b0000;
             font-size: 1.2rem;
             cursor: pointer;
             position: relative;
-            z-index: 110; /* Button ko sab se upar rakha hai */
+            z-index: 1000; /* Isse button click hoga */
         }
 
         #jumpscare {
@@ -57,7 +56,7 @@
             top: 0; left: 0;
             width: 100%; height: 100%;
             background: url('https://i.imgur.com/vH97Z9O.jpg') center/cover;
-            z-index: 1000;
+            z-index: 2000; /* Sab se upar */
         }
 
         #status {
@@ -75,8 +74,8 @@
     <div id="world">
         <div id="game-content">
             <h1>VOID AURA</h1>
-            <p id="msg">Andhera tumhe dekh raha hai...</p>
-            <button class="btn-start" onclick="startGame()">PLAY / START SENSORS</button>
+            <p id="msg">Taiyar ho?</p>
+            <button class="btn-start" id="startBtn" onclick="startGame()">PLAY GAME</button>
         </div>
     </div>
 
@@ -92,31 +91,33 @@
         const statusText = document.getElementById('status');
         const jumpscare = document.getElementById('jumpscare');
         const scareSound = document.getElementById('scare-sound');
+        const startBtn = document.getElementById('startBtn');
 
-        let x = 0, y = 0, z = 1;
+        let posX = 0, posY = 0;
         let isCrouching = false;
 
-        // Flashlight follow mouse
+        // Flashlight Logic
         document.addEventListener('mousemove', (e) => {
-            flashlight.style.background = `radial-gradient(circle 150px at ${e.clientX}px ${e.clientY}px, transparent 10%, rgba(0, 0, 0, 0.98) 80%)`;
+            flashlight.style.background = `radial-gradient(circle 180px at ${e.clientX}px ${e.clientY}px, transparent 10%, rgba(0, 0, 0, 0.98) 80%)`;
         });
 
-        // Movement Logic
+        // Movement (W=Agey, S=Peeche, A=Left, D=Right)
         document.addEventListener('keydown', (e) => {
             const key = e.key.toLowerCase();
-            if (key === 'w') z += 0.05; // Agey (Zoom in)
-            if (key === 's') z -= 0.05; // Peeche (Zoom out)
-            if (key === 'a') x += 20;   // Left
-            if (key === 'd') x -= 20;   // Right
+            let moveStep = isCrouching ? 10 : 20;
+
+            if (key === 'w') posY += moveStep;
+            if (key === 's') posY -= moveStep;
+            if (key === 'a') posX += moveStep;
+            if (key === 'd') posX -= moveStep;
 
             if (key === 'c') {
                 isCrouching = true;
-                world.style.transform = "translateY(100px)";
+                world.style.transform = "translateY(80px)";
                 statusText.innerText = "STATUS: CROUCHED";
-                console.log("Crouched");
             }
 
-            gameContent.style.transform = `translate(${x}px, ${y}px) scale(${z})`;
+            gameContent.style.transform = `translate(${posX}px, ${posY}px)`;
         });
 
         document.addEventListener('keyup', (e) => {
@@ -128,12 +129,18 @@
         });
 
         function startGame() {
-            document.getElementById('msg').innerText = "Ab bhago...";
-            // Jumpscare 5 second baad trigger hoga
+            startBtn.style.display = 'none'; // Button gayab
+            document.getElementById('msg').innerText = "Andhera shuru ho chuka hai...";
+            
+            // Jumpscare 5 seconds baad (5000ms)
             setTimeout(() => {
                 jumpscare.style.display = 'block';
-                scareSound.play().catch(e => console.log("Audio play error"));
-                setTimeout(() => { jumpscare.style.display = 'none'; }, 1500);
+                scareSound.play().catch(err => console.log("Sound error: Click screen first"));
+                
+                // 1.5 second baad jumpscare hat jayega
+                setTimeout(() => {
+                    jumpscare.style.display = 'none';
+                }, 1500);
             }, 5000);
         }
     </script>
