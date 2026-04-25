@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horror AI - Final Smooth Fix</title>
+    <title>Horror AI - Glitch Fixed</title>
     <style>
         body { margin: 0; background-color: #000; color: white; font-family: sans-serif; overflow: hidden; }
         #menu { position: absolute; width: 100%; height: 100%; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; }
@@ -16,12 +16,12 @@
 <body>
 
     <div id="ui">
-        GHOST DISTANCE: <span id="dist">--</span>m
+        DISTANCE: <span id="dist">--</span>m
         <div id="stamina-bar"><div id="stamina-fill"></div></div>
     </div>
 
     <div id="menu">
-        <h1 style="color: red;">GHOST PURSUIT</h1>
+        <h1 style="color: red;">NO ESCAPE</h1>
         <button id="playBtn">PLAY</button>
     </div>
 
@@ -37,7 +37,7 @@
         function init() {
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x000000);
-            scene.fog = new THREE.FogExp2(0x000000, 0.12);
+            scene.fog = new THREE.FogExp2(0x000000, 0.1);
 
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             
@@ -45,12 +45,12 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
             document.body.appendChild(renderer.domElement);
 
-            const ground = new THREE.Mesh(new THREE.PlaneGeometry(2000, 2000), new THREE.MeshStandardMaterial({ color: 0x0a0a0a }));
+            const ground = new THREE.Mesh(new THREE.PlaneGeometry(2000, 2000), new THREE.MeshStandardMaterial({ color: 0x111111 }));
             ground.rotation.x = -Math.PI / 2;
             scene.add(ground);
 
-            // --- HIGH POWER FLASHLIGHT (15m+) ---
-            flashlight = new THREE.SpotLight(0xffffff, 15, 20, Math.PI / 4, 0.5);
+            // --- FLASHLIGHT (25m Range) ---
+            flashlight = new THREE.SpotLight(0xffffff, 20, 25, Math.PI / 4, 0.5);
             camera.add(flashlight);
             flashlight.position.set(0, 0, 0);
             flashlight.target = new THREE.Object3D();
@@ -58,7 +58,7 @@
             flashlight.target.position.set(0, 0, -1);
             scene.add(camera);
 
-            // Ghost
+            // Ghost Entity
             ghost = new THREE.Mesh(new THREE.BoxGeometry(0.8, 2, 0.8), new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true }));
             ghost.position.set(20, 1, -20);
             scene.add(ghost);
@@ -76,7 +76,7 @@
                 if(e.code === 'KeyS') moveB = true;
                 if(e.code === 'KeyA') moveL = true;
                 if(e.code === 'KeyD') moveR = true;
-                if(e.code === 'ShiftLeft') isSprint = true;
+                if(e.shiftKey) isSprint = true;
                 if(e.code === 'KeyC') isCrouch = true;
                 if(e.code === 'Space' && canJump) { velocityY = 0.15; canJump = false; }
             });
@@ -85,7 +85,7 @@
                 if(e.code === 'KeyS') moveB = false;
                 if(e.code === 'KeyA') moveL = false;
                 if(e.code === 'KeyD') moveR = false;
-                if(e.code === 'ShiftLeft') isSprint = false;
+                if(!e.shiftKey) isSprint = false;
                 if(e.code === 'KeyC') isCrouch = false;
             });
 
@@ -96,16 +96,17 @@
             requestAnimationFrame(animate);
 
             if (gameActive) {
-                // --- CONTINUOUS GHOST PURSUIT (GLITCH FIXED) ---
-                // Ghost distance check separate from controls
-                let ghostPos = new THREE.Vector3(ghost.position.x, 0, ghost.position.z);
-                let playerPos = new THREE.Vector3(camera.position.x, 0, camera.position.z);
+                // --- PURE WORLD-SPACE AI (NEVER STOPS) ---
+                let ghostTarget = new THREE.Vector3();
+                ghostTarget.copy(camera.position); // Get player exact coordinates
+                ghostTarget.y = 1; // Keep ghost on ground
+
+                // Direct Move Logic (Glitch-free)
+                let ghostPos = ghost.position.clone();
+                let dir = new THREE.Vector3().subVectors(ghostTarget, ghostPos).normalize();
                 
-                let dir = new THREE.Vector3().subVectors(playerPos, ghostPos).normalize();
-                let ghostSpeed = 0.0707; // Walk speed (0.07) + 1%
-                
-                ghost.position.x += dir.x * ghostSpeed;
-                ghost.position.z += dir.z * ghostSpeed;
+                // Speed = 0.07 + 1% = 0.0707
+                ghost.position.add(dir.multiplyScalar(0.0707));
                 ghost.lookAt(camera.position.x, 1, camera.position.z);
 
                 let d = camera.position.distanceTo(ghost.position);
@@ -128,7 +129,7 @@
                     if (moveL) controls.moveRight(-speed);
                     if (moveR) controls.moveRight(speed);
 
-                    // Physics
+                    // Physics Logic
                     let headH = isCrouch ? 0.8 : 1.6;
                     camera.position.y += velocityY;
                     if(camera.position.y > headH) { velocityY -= 0.008; }
